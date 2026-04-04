@@ -14,13 +14,15 @@ export interface NavItem {
     href: NonNullable<InertiaLinkProps['href']>;
     icon?: LucideIcon;
     isActive?: boolean;
-};
+    permission?: string;
+}
 
 export interface MenuItem {
     title: string;
     href: string;
     icon?: LucideIcon;
     isActive?: boolean;
+    permission?: string;
     items?: NavItem[];
 }
 
@@ -31,5 +33,3 @@ export interface SharedData extends PageProps {
     ziggy: Config & { location: string };
     sidebarOpen: boolean;
 }
-
-

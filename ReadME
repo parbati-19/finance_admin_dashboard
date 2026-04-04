@@ -1,0 +1,267 @@
+# Finance Data Processing & Access Control Backend
+
+## 📌 Overview
+
+This project is a backend system built to support a finance dashboard application where users interact with financial data based on their roles.
+
+The system focuses on:
+
+* Clean API design
+* Logical data modeling
+* Role-based access control
+* Aggregated financial insights
+
+The goal is not just CRUD functionality, but to demonstrate **backend architecture, maintainability, and clarity of thought**.
+
+---
+
+## 🎯 Objective
+
+This project evaluates backend engineering capabilities including:
+
+* Designing scalable APIs
+* Structuring business logic effectively
+* Handling data integrity and validation
+* Implementing access control
+* Delivering clean and maintainable code
+
+---
+
+## 🧠 Design Philosophy
+
+* **Separation of Concerns** → Controllers, Services, Repositories
+* **Readable & Maintainable Code** → Clear naming and modular structure
+* **Domain-Oriented Thinking** → Finance-centric modeling
+* **Explicit Access Control** → Role-based restrictions enforced at backend level
+* **Minimal but Complete** → No unnecessary complexity
+
+---
+
+## 🏗️ Architecture
+
+```
+Controllers → Services → Repositories → Models → Database
+```
+
+### Key Layers
+
+* **Controllers**
+
+  * Handle HTTP requests
+  * Delegate logic to services
+
+* **Services**
+
+  * Contain business logic (finance calculations, rules)
+
+* **Repositories**
+
+  * Handle database interactions
+
+* **Policies / Middleware**
+
+  * Enforce access control
+
+---
+
+## 👥 User & Role Management
+
+### Roles
+
+| Role    | Permissions                        |
+| ------- | ---------------------------------- |
+| Viewer  | Read-only access to dashboard data |
+| Analyst | View records + analytics           |
+| Admin   | Full CRUD + user management        |
+
+### Features
+
+* Create and manage users
+* Assign roles
+* Activate / deactivate users
+* Enforce role-based restrictions
+
+---
+
+## 💰 Financial Records
+
+### Fields
+
+* `amount`
+* `type` (income / expense)
+* `category`
+* `date`
+* `description`
+
+### Supported Operations
+
+* Create records
+* View records
+* Update records
+* Delete records
+* Filter by:
+
+  * Date
+  * Category
+  * Type
+
+---
+
+## 📊 Dashboard Summary APIs
+
+The system provides aggregated financial insights:
+
+* Total Income
+* Total Expenses
+* Net Balance
+* Category-wise totals
+* Recent transactions
+* Monthly trends
+
+### Purpose
+
+These endpoints demonstrate:
+
+* Data aggregation
+* Efficient querying
+* Backend-driven analytics
+
+---
+
+## 🔐 Access Control
+
+Access control is enforced at the backend using:
+
+* Middleware / Policies
+
+### Rules
+
+* Viewer → Read-only
+* Analyst → Read + analytics
+* Admin → Full access
+
+Unauthorized actions return proper error responses.
+
+---
+
+## ✅ Validation & Error Handling
+
+* Request validation at entry point
+* Structured error responses
+* Proper HTTP status codes
+
+Examples:
+
+* `400` → Validation error
+* `403` → Forbidden
+* `404` → Not found
+* `500` → Server error
+
+---
+
+## 🗄️ Data Persistence
+
+* Uses a relational database (e.g., MySQL / SQLite)
+* Structured schema for:
+
+  * Users
+  * Roles
+  * Financial records
+
+If simplified storage is used, it is clearly documented.
+
+---
+
+## ⚙️ Setup Instructions
+
+```bash
+# Clone repository
+git clone <repo-url>
+
+# Install dependencies
+composer install
+
+# Setup environment
+cp .env.example .env
+
+# Generate key
+php artisan key:generate
+
+# Run migrations
+php artisan migrate
+
+# Start server
+php artisan serve
+```
+
+---
+
+## 🔌 API Overview
+
+### Auth / Users
+
+* `POST /users`
+* `GET /users`
+* `PATCH /users/{id}`
+* `DELETE /users/{id}`
+
+### Financial Records
+
+* `POST /records`
+* `GET /records`
+* `PUT /records/{id}`
+* `DELETE /records/{id}`
+
+### Dashboard
+
+* `GET /dashboard/summary`
+* `GET /dashboard/trends`
+
+---
+
+## ⚡ Optional Enhancements
+
+* Authentication (JWT / Sanctum)
+* Pagination
+* Search & filtering
+* Soft deletes
+* API documentation (Swagger / Postman)
+* Unit / feature tests
+
+---
+
+## 🧪 Assumptions
+
+* Roles are predefined (Viewer, Analyst, Admin)
+* Authentication may be simplified or mocked
+* Financial records are single-currency
+* Focus is backend logic, not UI
+
+---
+
+## 📈 Tradeoffs
+
+* Prioritized clarity over over-engineering
+* Limited feature scope to maintain focus
+* Chose simple schema for readability
+
+---
+
+## 🧩 Evaluation Alignment
+
+This project demonstrates:
+
+* ✔ Backend structure & design
+* ✔ Logical business implementation
+* ✔ Role-based access control
+* ✔ Clean and maintainable code
+* ✔ Proper validation and error handling
+* ✔ Thoughtful API design
+
+---
+
+## 🚀 Conclusion
+
+This backend is designed as a **clear, maintainable, and logically structured system** that reflects real-world backend engineering practices.
+
+The focus is not just on making things work, but on **how they are built, organized, and reasoned about**.

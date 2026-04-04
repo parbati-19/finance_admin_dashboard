@@ -1,20 +1,21 @@
 <script setup lang="ts">
+import 'vue-sonner/style.css';
 import { usePage } from '@inertiajs/vue3';
 import { SidebarProvider } from '@/components/ui/sidebar';
-import type { AppVariant } from '@/types';
+import { Toaster } from '@/components/ui/sonner';
+import type { SharedData } from '@/types';
 
-type Props = {
-    variant?: AppVariant;
-};
+interface Props {
+    variant?: 'header' | 'sidebar';
+}
 
-withDefaults(defineProps<Props>(), {
-    variant: 'sidebar',
-});
+defineProps<Props>();
 
-const isOpen = usePage().props.sidebarOpen;
+const isOpen = usePage<SharedData>().props.sidebarOpen;
 </script>
 
 <template>
+    <Toaster position="bottom-right" />
     <div v-if="variant === 'header'" class="flex min-h-screen w-full flex-col">
         <slot />
     </div>

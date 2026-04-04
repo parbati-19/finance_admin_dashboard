@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
+import { Link, usePage } from '@inertiajs/vue3';
+import { computed } from 'vue';
 import AppLogo from '@/components/AppLogo.vue';
 import NavFooter from '@/components/NavFooter.vue';
 import NavMain from '@/components/NavMain.vue';
@@ -15,7 +16,22 @@ import {
 } from '@/components/ui/sidebar';
 import { footerNavItems, mainNavItems } from '@/menu';
 import { dashboard } from '@/routes';
-import type { NavItem } from '@/types';
+import type { SharedData } from '@/types';
+
+const page = usePage<SharedData>();
+
+const filteredNavItems = computed(() => {
+    const perms = page.props.auth.permissions;
+
+    return mainNavItems
+        .filter((item) => !item.permission || perms.includes(item.permission))
+        .map((item) => ({
+            ...item,
+            items: item.items?.filter(
+                (sub) => !sub.permission || perms.includes(sub.permission),
+            ),
+        }));
+});
 
 // const mainNavItems: NavItem[] = [
 //     {
@@ -54,7 +70,7 @@ import type { NavItem } from '@/types';
         </SidebarHeader>
 
         <SidebarContent>
-            <NavMain :items="mainNavItems" />
+            <NavMain :items="filteredNavItems" />
         </SidebarContent>
 
         <SidebarFooter>
