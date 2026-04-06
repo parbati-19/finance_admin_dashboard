@@ -1,109 +1,138 @@
 <p align="center">
-  <h1 align="center">Finance Data Processing and Access Control System</h1>
+  <h1 align="center">💰 Finance Data Processing and Access Control System</h1>
   <p align="center">
-    A full-stack finance management and access control backend built with Laravel 13, Vue 3, Inertia.js, and Tailwind CSS.
+    A full-stack finance management and access control system built with Laravel 13, Vue 3, Inertia.js, and Tailwind CSS.
     <br />
     Features role-based access control, two-factor authentication, transaction tracking, analytics dashboards, and a complete REST API.
   </p>
+  <p align="center">
+    <a href="#-quick-start"><img src="https://img.shields.io/badge/Quick_Start-blue?style=for-the-badge" alt="Quick Start" /></a>
+    <a href="https://petstore.swagger.io/?url=https://raw.githubusercontent.com/parbati-19/finance_admin_dashboard/main/openapi.yaml"><img src="https://img.shields.io/badge/API_Docs-Swagger-85EA2D?style=for-the-badge&logo=swagger&logoColor=black" alt="API Docs" /></a>
+  </p>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/PHP-8.3+-777BB4?style=flat-square&logo=php&logoColor=white" />
+  <img src="https://img.shields.io/badge/Laravel-13-FF2D20?style=flat-square&logo=laravel&logoColor=white" />
+  <img src="https://img.shields.io/badge/Vue.js-3-4FC08D?style=flat-square&logo=vuedotjs&logoColor=white" />
+  <img src="https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white" />
+  <img src="https://img.shields.io/badge/Inertia.js-3-9553E9?style=flat-square&logo=inertia&logoColor=white" />
+  <img src="https://img.shields.io/badge/Vite-8-646CFF?style=flat-square&logo=vite&logoColor=white" />
+  <img src="https://img.shields.io/badge/License-MIT-green?style=flat-square" />
 </p>
 
 ---
 
-## Table of Contents
+## 📑 Table of Contents
 
-- [Tech Stack](#tech-stack)
-- [Features](#features)
-- [Prerequisites](#prerequisites)
-- [Installation](#installation)
-- [Usage](#usage)
-- [Project Structure](#project-structure)
-- [Authentication](#authentication)
-- [Authorization](#authorization)
-- [API Reference](#api-reference)
-  - [API Documentation (Postman / Swagger)](#api-documentation-postman--swagger)
-- [Database Schema](#database-schema)
-- [Testing](#testing)
-- [Code Quality](#code-quality)
-- [License](#license)
-
----
-
-## Tech Stack
-
-| Layer                | Technology                                   |
-| -------------------- | -------------------------------------------- |
-| **Backend**          | PHP 8.3+, Laravel 13                         |
-| **Frontend**         | Vue 3, TypeScript, Tailwind CSS 4            |
-| **SPA Bridge**       | Inertia.js 3                                 |
-| **UI Components**    | shadcn-vue (New York v4 style)               |
-| **Icons**            | Lucide Vue Next                              |
-| **Data Tables**      | TanStack Vue Table                           |
-| **Auth**             | Laravel Fortify (web), Laravel Sanctum (API) |
-| **Authorization**    | Spatie Laravel Permission                    |
-| **Build Tool**       | Vite 8                                       |
-| **Route Generation** | Laravel Wayfinder                            |
-| **Testing**          | Pest 4                                       |
-| **Linting**          | ESLint, Prettier, Laravel Pint               |
+- [Tech Stack](#-tech-stack)
+- [Features](#-features)
+- [Quick Start](#-quick-start)
+- [Usage](#-usage)
+- [Project Structure](#-project-structure)
+- [Authentication](#-authentication)
+- [Authorization](#-authorization)
+- [API Reference](#-api-reference)
+  - [API Documentation (Postman / Swagger)](#-api-documentation--testing)
+- [Database Schema](#-database-schema)
+- [Testing](#-testing)
+- [Code Quality](#-code-quality)
+- [License](#-license)
 
 ---
 
-## Features
+## 🛠 Tech Stack
 
-### Core
+<table>
+  <tr>
+    <td><strong>Backend</strong></td>
+    <td><img src="https://img.shields.io/badge/PHP-8.3+-777BB4?logo=php&logoColor=white" /> <img src="https://img.shields.io/badge/Laravel-13-FF2D20?logo=laravel&logoColor=white" /></td>
+  </tr>
+  <tr>
+    <td><strong>Frontend</strong></td>
+    <td><img src="https://img.shields.io/badge/Vue.js-3-4FC08D?logo=vuedotjs&logoColor=white" /> <img src="https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white" /> <img src="https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?logo=tailwindcss&logoColor=white" /></td>
+  </tr>
+  <tr>
+    <td><strong>SPA Bridge</strong></td>
+    <td><img src="https://img.shields.io/badge/Inertia.js-3-9553E9?logo=inertia&logoColor=white" /></td>
+  </tr>
+  <tr>
+    <td><strong>UI Components</strong></td>
+    <td>shadcn-vue (New York v4 style) · Lucide Icons · TanStack Table</td>
+  </tr>
+  <tr>
+    <td><strong>Auth</strong></td>
+    <td><img src="https://img.shields.io/badge/Fortify-Web-FF2D20?logo=laravel&logoColor=white" /> <img src="https://img.shields.io/badge/Sanctum-API-FF2D20?logo=laravel&logoColor=white" /></td>
+  </tr>
+  <tr>
+    <td><strong>Authorization</strong></td>
+    <td><img src="https://img.shields.io/badge/Spatie-Permission-2596BE" /></td>
+  </tr>
+  <tr>
+    <td><strong>Build & DX</strong></td>
+    <td><img src="https://img.shields.io/badge/Vite-8-646CFF?logo=vite&logoColor=white" /> · Wayfinder · Pest 4 · ESLint · Prettier · Pint</td>
+  </tr>
+</table>
 
-- **Dashboard** — New Users summary cards, Financial summary cards with income/expense trends, interactive chart with daily/weekly/monthly views, top expenses, and recent transactions
-- **Transaction Records** — Full CRUD with soft deletes, filterable by type (Income/Expense), category, and date range
-- **Transaction Analytics** — Period-based analytics (weekly, monthly, yearly) with income vs expense charts
-- **User Management** — Full CRUD with soft deletes, restore, and permanent delete capabilities along with roles and permissions
+---
 
-### Authentication & Security
+## ✨ Features
 
-- Email & password login with rate limiting
-- User registration with email verification
-- Two-factor authentication (TOTP) with recovery codes
-- Password reset via email
-- Password confirmation for sensitive actions
-- API token authentication via Sanctum
+<table>
+<tr>
+<td width="50%">
 
-### Authorization
+### 📊 Core Modules
+- **Dashboard** — Summary cards, income/expense trends, interactive charts (daily/weekly/monthly), top expenses, recent transactions
+- **Transactions** — Full CRUD with soft deletes, filterable by type, category, and date range
+- **Analytics** — Period-based analytics (weekly, monthly, yearly) with income vs expense charts
+- **User Management** — Full CRUD with soft deletes, restore, permanent delete, roles & permissions
 
-- Role-based access control (RBAC) with Spatie Laravel Permission
-- Pre-configured roles: **Admin**, **Analyst**, **Visitor**
-- Granular permissions: `view dashboard`, `view transactions`, `view users`, `view roles`, `view permissions`
+</td>
+<td width="50%">
+
+### 🎨 UI/UX
+- Responsive layout with collapsible sidebar
+- 🌗 Light / Dark / System theme
+- Toast notifications & breadcrumbs
+- Settings pages (Profile, Security, Appearance)
+
+### 🔐 Security
+- Two-factor authentication (TOTP + recovery codes)
+- Email verification & password reset
+- Rate-limited login
+- API token auth via Sanctum
+
+</td>
+</tr>
+</table>
+
+### 🛡️ Authorization
+
+- Role-based access control (**RBAC**) with Spatie Laravel Permission
+- Pre-configured roles: `Admin` · `Analyst` · `Visitor`
+- Granular permissions: `view dashboard` · `view transactions` · `view users` · `view roles` · `view permissions`
 - Role & permission management UI with sync capabilities
 - Runtime role switching
 
-### UI/UX
-
-- Responsive layout with collapsible sidebar
-- Light / Dark / System theme support
-- Toast notifications
-- Breadcrumb navigation
-- Settings pages (Profile, Security, Appearance)
-
 ---
 
-## Prerequisites
+## 🚀 Quick Start
 
-- **PHP** >= 8.3
-- **Composer** >= 2.x
-- **Node.js** >= 20.x
-- **npm** >= 10.x
-- **Database** — SQLite (default), MySQL, or PostgreSQL
+### Prerequisites
 
----
+> **PHP** >= 8.3 · **Composer** >= 2.x · **Node.js** >= 20.x · **npm** >= 10.x · **MySQL** / PostgreSQL / SQLite
 
-## Installation
-
-### Quick Setup
+### One-Command Setup
 
 ```bash
-git clone <repository-url> finance
-cd finance
+git clone https://github.com/parbati-19/finance_admin_dashboard.git
+cd finance_admin_dashboard
 composer setup
 ```
 
-The `composer setup` command runs the following automatically:
+<details>
+<summary>📋 <code>composer setup</code> runs the following automatically</summary>
 
 1. `composer install` — installs PHP dependencies
 2. Copies `.env.example` → `.env`
@@ -112,60 +141,55 @@ The `composer setup` command runs the following automatically:
 5. `npm install` — installs frontend dependencies
 6. `npm run build` — compiles frontend assets
 
-### Manual Setup
+</details>
+
+<details>
+<summary>🔧 Manual setup (step-by-step)</summary>
 
 ```bash
-# Install PHP dependencies
 composer install
-
-# Copy environment file and generate key
 cp .env.example .env
 php artisan key:generate
-
-# Run migrations and seed the database
 php artisan migrate
 php artisan db:seed
-
-# Install frontend dependencies and build
 npm install
 npm run build
 ```
 
-### Default Seed Data
+</details>
 
-| Role    | Permissions         |
-| ------- | ------------------- |
-| Admin   | All permissions     |
-| Analyst | `view transactions` |
-| Visitor | `view dashboard`    |
+### 🌱 Seed Data
 
-**Test Account:** `test@example.com` / `password` (Admin role)
+| Role | Permissions | Description |
+| --- | --- | --- |
+| 🔴 **Admin** | All permissions | Full system access |
+| 🟡 **Analyst** | `view transactions` | Transaction data access |
+| 🟢 **Visitor** | `view dashboard` | Dashboard-only access |
 
----
-
-## Usage
-
-### Development Server
-
-```bash
-composer dev
-```
-
-This concurrently starts:
-
-- **Laravel server** — `php artisan serve` → `http://localhost:8000`
-- **Queue worker** — `php artisan queue:listen`
-- **Vite dev server** — `npm run dev` → HMR on `http://localhost:5173`
-
-### Production Build
-
-```bash
-npm run build
-```
+> **Default login:** `test@example.com` / `password` (Admin role)
 
 ---
 
-## Project Structure
+## 🎮 Usage
+
+```bash
+composer dev    # starts Laravel + Queue + Vite concurrently
+```
+
+| Service | URL |
+| --- | --- |
+| Laravel server | `http://localhost:8000` |
+| Vite HMR | `http://localhost:5173` |
+| Queue worker | Background |
+
+Production build: `npm run build`
+
+---
+
+## 📁 Project Structure
+
+<details>
+<summary>Click to expand</summary>
 
 ```
 ├── app/
@@ -189,13 +213,6 @@ npm run build
 │   │   ├── composables/          # Vue composables (useToast, useTwoFactorAuth, etc.)
 │   │   ├── layouts/              # App, Auth, and Settings layouts
 │   │   ├── pages/                # Vue page components
-│   │   │   ├── Dashboard.vue
-│   │   │   ├── TransactionRecords/
-│   │   │   ├── Users/
-│   │   │   ├── Roles/
-│   │   │   ├── Permissions/
-│   │   │   ├── auth/
-│   │   │   └── settings/
 │   │   └── types/                # TypeScript type definitions
 │   └── css/
 ├── routes/
@@ -207,14 +224,17 @@ npm run build
 │   ├── migrations/               # 10 migration files
 │   ├── factories/
 │   └── seeders/
+├── openapi.yaml                  # OpenAPI 3.0 specification
 └── tests/
-    ├── Feature/                  # Feature tests (auth, dashboard, settings)
+    ├── Feature/
     └── Unit/
 ```
 
+</details>
+
 ---
 
-## Authentication
+## 🔑 Authentication
 
 ### Web Authentication (Fortify)
 
@@ -251,7 +271,7 @@ curl -X POST http://localhost:8000/api/logout \
 
 ---
 
-## Authorization
+## 🛡️ Authorization
 
 ### Roles & Permissions
 
@@ -271,9 +291,11 @@ Navigation items are dynamically shown/hidden based on the authenticated user's 
 
 ---
 
-## API Reference
+## 📡 API Reference
 
 All API routes are prefixed with `/api` and return JSON responses.
+
+> **📖 [View Interactive API Documentation (Swagger UI)](https://petstore.swagger.io/?url=https://raw.githubusercontent.com/parbati-19/finance_admin_dashboard/main/openapi.yaml)** — browse all 34 endpoints live, no setup required.
 
 ### Public Endpoints
 
@@ -335,31 +357,28 @@ All API routes are prefixed with `/api` and return JSON responses.
 | `PUT`    | `/api/permissions/{id}`       | Update a permission                        |
 | `DELETE` | `/api/permissions/{id}`       | Delete a permission                        |
 
-### API Documentation (Postman / Swagger)
+### 📋 API Documentation & Testing
 
-An **OpenAPI 3.0** specification is included at [`openapi.yaml`](openapi.yaml) in the project root. You can use it to explore and test all 34 API endpoints interactively.
+An **OpenAPI 3.0** specification ([`openapi.yaml`](openapi.yaml)) is included in the project root with all 34 endpoints.
 
-> **📖 [View API Documentation in Swagger UI](https://petstore.swagger.io/?url=https://raw.githubusercontent.com/parbati-19/finance_admin_dashboard/main/openapi.yaml)**
+<p>
+  <a href="https://petstore.swagger.io/?url=https://raw.githubusercontent.com/parbati-19/finance_admin_dashboard/main/openapi.yaml">
+    <img src="https://img.shields.io/badge/Swagger_UI-View_API_Docs-85EA2D?style=for-the-badge&logo=swagger&logoColor=black" alt="Swagger UI" />
+  </a>
+</p>
 
-#### Import into Postman
+<details>
+<summary>🔧 Import into Postman</summary>
 
 1. Open **Postman** → **Import** (top-left)
-2. Drag and drop `openapi.yaml` or click **Upload Files** and select it
-3. Postman will generate a collection with all endpoints, request bodies, and example schemas
-4. Set the `baseUrl` variable to `http://localhost:8000` (or your local domain)
-5. Call `POST /api/login` first, copy the token, and set the `Authorization` header to `Bearer {token}` (or use a Postman environment variable)
+2. Drag & drop `openapi.yaml` or click **Upload Files**
+3. Set the `baseUrl` variable to `http://localhost:8000`
+4. Call `POST /api/login` first, copy the token, and add it as `Authorization: Bearer {token}`
 
-#### Use with Swagger UI
+</details>
 
-**Option A — Swagger Editor (browser)**
-
-1. Open [http://editor.swagger.io](http://editor.swagger.io)
-2. Go to **File → Import file** and select `openapi.yaml`
-3. Use the **Try it out** buttons to test endpoints
-
-> **Note:** Use the **HTTP** version of the Swagger Editor (`http://`, not `https://`). The HTTPS editor cannot call a local HTTP API due to browser mixed-content restrictions.
-
-**Option B — Swagger UI (Docker)**
+<details>
+<summary>🐳 Run Swagger UI locally (Docker)</summary>
 
 ```bash
 docker run -p 8080:8080 \
@@ -368,17 +387,22 @@ docker run -p 8080:8080 \
   swaggerapi/swagger-ui
 ```
 
-Then open `http://localhost:8080` in your browser.
+Open `http://localhost:8080` in your browser.
 
-#### Authenticate in Swagger UI
+</details>
+
+<details>
+<summary>🔒 How to authenticate in Swagger UI</summary>
 
 1. Click the **Authorize** button (🔒) at the top
-2. Enter your bearer token (obtained from `POST /api/login`)
+2. Enter your bearer token (from `POST /api/login`)
 3. Click **Authorize** — all subsequent requests will include the token
+
+</details>
 
 ---
 
-## Database Schema
+## 🗄️ Database Schema
 
 ### Models
 
@@ -409,7 +433,7 @@ User                     UserDetail                 TransactionRecord
 
 ---
 
-## Testing
+## 🧪 Testing
 
 ```bash
 # Run all tests
@@ -434,7 +458,7 @@ php artisan test --filter=AuthenticationTest
 
 ---
 
-## Code Quality
+## ✅ Code Quality
 
 ```bash
 # PHP linting (Laravel Pint)
@@ -458,6 +482,12 @@ composer ci:check
 
 ---
 
-## License
+## 📄 License
 
 This project is open-sourced software licensed under the [MIT License](https://opensource.org/licenses/MIT).
+
+---
+
+<p align="center">
+  Made with ❤️ using Laravel, Vue, and Tailwind CSS
+</p>
