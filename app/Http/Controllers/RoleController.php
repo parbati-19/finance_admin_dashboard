@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\Roles\StoreRoleRequest;
 use App\Http\Requests\Roles\UpdateRoleRequest;
+use App\Http\Resources\RoleResource;
 use Illuminate\Http\Request;
 use Spatie\Permission\Models\Role;
 use Inertia\Inertia;
@@ -19,7 +20,7 @@ class RoleController extends Controller
         }
 
         return Inertia::render('Roles/Index', [
-            'roles' => $query->paginate(10),
+            'roles' => RoleResource::collection($query->paginate(10)),
         ]);
     }
 
@@ -27,19 +28,19 @@ class RoleController extends Controller
     {
         Role::create($request->validated());
 
-        return redirect()->route('roles.index')->with('success', 'Role created');
+        return redirect()->route('roles.index')->with('success', 'Role created successfully');
     }
 
     public function update(UpdateRoleRequest $request, Role $role)
     {
         $role->update($request->validated());
 
-        return redirect()->route('roles.index')->with('success', 'Role updated');
+        return redirect()->route('roles.index')->with('success', 'Role updated successfully');
     }
 
     public function destroy(Role $role)
     {
         $role->delete();
-        return redirect()->route('roles.index')->with('success', 'Role deleted');
+        return redirect()->route('roles.index')->with('success', 'Role deleted successfully');
     }
 }

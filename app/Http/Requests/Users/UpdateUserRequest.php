@@ -14,11 +14,11 @@ class UpdateUserRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,' . $this->route('user')->id,
+            'name' => 'nullable|string|max:255',
+            'email' => 'nullable|email|unique:users,email,' . $this->route('user')->id,
             'password' => 'nullable|string|min:8|confirmed',
-            'status' => 'required|in:0,1',
-            'role' => 'required|string|exists:roles,name',
+            'status' => 'nullable|in:0,1',
+            'role' => 'nullable|string|exists:roles,name',
         ];
     }
 }

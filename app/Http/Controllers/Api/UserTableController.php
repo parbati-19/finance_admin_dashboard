@@ -3,35 +3,16 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+
 class UserTableController extends Controller
 {
     public function index(): JsonResponse
     {
-        $users = User::with('roles')->select('id', 'name', 'email', 'created_at')->get();
-
-        $data = $users->map(function ($user) {
-            $role = null;
-            if (method_exists($user, 'getRoleNames')) {
-                $role = $user->getRoleNames()->first();
-            }
-
-            $deleted = false;
-            if (method_exists($user, 'trashed')) {
-                $deleted = $user->trashed();
-            }
-
-            return [
-                'id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
-                'created_at' => $user->created_at,
-                'role' => $role,
-                'deleted' => $deleted,
-            ];
-        });
+        $users = User::withTrashed()->with('roles')->get();
 
         $columns = [
             ['key' => 'id', 'header' => '#'],
@@ -45,7 +26,7 @@ class UserTableController extends Controller
 
         return response()->json([
             'columns' => $columns,
-            'data' => $data,
+            'data' => UserResource::collection($users),
         ]);
     }
 

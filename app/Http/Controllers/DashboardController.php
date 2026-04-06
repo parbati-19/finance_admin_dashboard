@@ -6,16 +6,18 @@ use App\Models\Enums\TransactionType;
 use App\Models\TransactionRecord;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class DashboardController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $userId = Auth::id();
         $now = Carbon::now();
+        $chartPeriod = $request->input('chart_period', 'daily');
 
         $currentMonthStart = $now->copy()->startOfMonth();
         $currentMonthEnd = $now->copy()->endOfMonth();
@@ -87,20 +89,12 @@ class DashboardController extends Controller
             ? round((($newCustomers - $lastMonthCustomers) / $lastMonthCustomers) * 100, 1)
             : ($newCustomers > 0 ? 100 : 0);
 
-        // Daily breakdown for current month (chart data)
-        $dailyData = TransactionRecord::where('user_id', $userId)
-            ->whereBetween('date', [$currentMonthStart, $currentMonthEnd])
-            ->select('date', 'type', DB::raw('SUM(amount) as total'))
-            ->groupBy('date', 'type')
-            ->orderBy('date')
-            ->get()
-            ->groupBy(fn($row) => $row->date->format('Y-m-d'))
-            ->map(fn($group, $date) => [
-                'date' => Carbon::parse($date)->format('M d'),
-                'income' => round((float) $group->where('type', TransactionType::Income)->sum('total'), 2),
-                'expense' => round((float) $group->where('type', TransactionType::Expense)->sum('total'), 2),
-            ])
-            ->values();
+        // Chart data based on selected period
+        $chartData = match ($chartPeriod) {
+            'weekly' => $this->getWeeklyChartData($userId, $now),
+            'monthly' => $this->getMonthlyChartData($userId, $now),
+            default => $this->getDailyChartData($userId, $currentMonthStart, $currentMonthEnd),
+        };
 
         // Top expense categories this month
         $topExpenses = TransactionRecord::where('user_id', $userId)
@@ -150,10 +144,80 @@ class DashboardController extends Controller
                 'expenseChange' => $expenseChange,
                 'totalChange' => $totalChange,
             ],
-            'chartData' => $dailyData,
+            'chartData' => $chartData,
+            'chartPeriod' => $chartPeriod,
             'topExpenses' => $topExpenses,
             'recentTransactions' => $recentTransactions,
             'currentMonth' => $now->format('F Y'),
         ]);
+    }
+
+    private function getDailyChartData(int $userId, Carbon $start, Carbon $end): \Illuminate\Support\Collection
+    {
+        return TransactionRecord::where('user_id', $userId)
+            ->whereBetween('date', [$start, $end])
+            ->select('date', 'type', DB::raw('SUM(amount) as total'))
+            ->groupBy('date', 'type')
+            ->orderBy('date')
+            ->get()
+            ->groupBy(fn($row) => $row->date->format('Y-m-d'))
+            ->map(fn($group, $date) => [
+                'date' => Carbon::parse($date)->format('M d'),
+                'income' => round((float) $group->where('type', TransactionType::Income)->sum('total'), 2),
+                'expense' => round((float) $group->where('type', TransactionType::Expense)->sum('total'), 2),
+            ])
+            ->values();
+    }
+
+    private function getWeeklyChartData(int $userId, Carbon $now): \Illuminate\Support\Collection
+    {
+        $start = $now->copy()->subWeeks(11)->startOfWeek();
+        $end = $now->copy()->endOfWeek();
+
+        return TransactionRecord::where('user_id', $userId)
+            ->whereBetween('date', [$start, $end])
+            ->select(
+                DB::raw('YEAR(date) as yr'),
+                DB::raw('WEEK(date, 1) as wk'),
+                'type',
+                DB::raw('SUM(amount) as total')
+            )
+            ->groupBy('yr', 'wk', 'type')
+            ->orderBy('yr')
+            ->orderBy('wk')
+            ->get()
+            ->groupBy(fn($row) => $row->yr . '-W' . str_pad($row->wk, 2, '0', STR_PAD_LEFT))
+            ->map(fn($group, $key) => [
+                'date' => $key,
+                'income' => round((float) $group->where('type', TransactionType::Income)->sum('total'), 2),
+                'expense' => round((float) $group->where('type', TransactionType::Expense)->sum('total'), 2),
+            ])
+            ->values();
+    }
+
+    private function getMonthlyChartData(int $userId, Carbon $now): \Illuminate\Support\Collection
+    {
+        $start = $now->copy()->subMonths(2)->startOfMonth();
+        $end = $now->copy()->endOfMonth();
+
+        return TransactionRecord::where('user_id', $userId)
+            ->whereBetween('date', [$start, $end])
+            ->select(
+                DB::raw('YEAR(date) as yr'),
+                DB::raw('MONTH(date) as mo'),
+                'type',
+                DB::raw('SUM(amount) as total')
+            )
+            ->groupBy('yr', 'mo', 'type')
+            ->orderBy('yr')
+            ->orderBy('mo')
+            ->get()
+            ->groupBy(fn($row) => $row->yr . '-' . str_pad($row->mo, 2, '0', STR_PAD_LEFT))
+            ->map(fn($group, $key) => [
+                'date' => Carbon::parse($key . '-01')->format('M Y'),
+                'income' => round((float) $group->where('type', TransactionType::Income)->sum('total'), 2),
+                'expense' => round((float) $group->where('type', TransactionType::Expense)->sum('total'), 2),
+            ])
+            ->values();
     }
 }

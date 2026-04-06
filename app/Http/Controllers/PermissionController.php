@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\Permissions\StorePermissionRequest;
 use App\Http\Requests\Permissions\UpdatePermissionRequest;
+use App\Http\Resources\PermissionResource;
 use Illuminate\Http\Request;
 use Spatie\Permission\Models\Permission;
 use Inertia\Inertia;
@@ -19,7 +20,7 @@ class PermissionController extends Controller
         }
 
         return Inertia::render('Permissions/Index', [
-            'permissions' => $query->paginate(10),
+            'permissions' => PermissionResource::collection($query->paginate(10)),
         ]);
     }
 

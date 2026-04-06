@@ -1,23 +1,23 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
 use App\Http\Resources\TransactionRecordResource;
 use App\Models\Enums\TransactionType;
 use App\Models\TransactionRecord;
 use Carbon\Carbon;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Inertia\Inertia;
 
 class TransactionAnalyticsController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request): JsonResponse
     {
         $userId = Auth::id();
         $period = $request->input('period', 'month');
-
         $now = Carbon::now();
 
         $dateRange = match ($period) {
@@ -31,13 +31,11 @@ class TransactionAnalyticsController extends Controller
         $baseQuery = TransactionRecord::where('user_id', $userId)
             ->whereBetween('date', [$start, $end]);
 
-        // Summary totals
         $totalTransactions = (clone $baseQuery)->count();
         $totalIncome = (clone $baseQuery)->where('type', TransactionType::Income)->sum('amount');
         $totalExpense = (clone $baseQuery)->where('type', TransactionType::Expense)->sum('amount');
         $netBalance = $totalIncome - $totalExpense;
 
-        // Category breakdown
         $categoryBreakdown = (clone $baseQuery)
             ->select('category', 'type', DB::raw('SUM(amount) as total'), DB::raw('COUNT(*) as count'))
             ->groupBy('category', 'type')
@@ -51,16 +49,6 @@ class TransactionAnalyticsController extends Controller
                 'count' => $row->count,
             ]);
 
-        // Recent transactions (last 5)
-        $recentTransactions = TransactionRecordResource::collection(
-            TransactionRecord::where('user_id', $userId)
-                ->orderByDesc('date')
-                ->orderByDesc('id')
-                ->limit(5)
-                ->get()
-        );
-
-        // Daily totals for the period (for chart-like display)
         $dailyTotals = (clone $baseQuery)
             ->select('date', 'type', DB::raw('SUM(amount) as total'))
             ->groupBy('date', 'type')
@@ -74,7 +62,6 @@ class TransactionAnalyticsController extends Controller
             ])
             ->values();
 
-        // Top categories by expense
         $topExpenseCategories = (clone $baseQuery)
             ->where('type', TransactionType::Expense)
             ->select('category', DB::raw('SUM(amount) as total'), DB::raw('COUNT(*) as count'))
@@ -87,11 +74,9 @@ class TransactionAnalyticsController extends Controller
                 'total' => number_format((float) $row->total, 2, '.', ''),
                 'count' => $row->count,
                 'percentage' => $totalExpense > 0
-                    ? round(($row->total / $totalExpense) * 100, 1)
-                    : 0,
+                    ? round(($row->total / $totalExpense) * 100, 1) : 0,
             ]);
 
-        // Top categories by income
         $topIncomeCategories = (clone $baseQuery)
             ->where('type', TransactionType::Income)
             ->select('category', DB::raw('SUM(amount) as total'), DB::raw('COUNT(*) as count'))
@@ -104,11 +89,18 @@ class TransactionAnalyticsController extends Controller
                 'total' => number_format((float) $row->total, 2, '.', ''),
                 'count' => $row->count,
                 'percentage' => $totalIncome > 0
-                    ? round(($row->total / $totalIncome) * 100, 1)
-                    : 0,
+                    ? round(($row->total / $totalIncome) * 100, 1) : 0,
             ]);
 
-        return Inertia::render('TransactionRecords/Analytics', [
+        $recentTransactions = TransactionRecordResource::collection(
+            TransactionRecord::where('user_id', $userId)
+                ->orderByDesc('date')
+                ->orderByDesc('id')
+                ->limit(5)
+                ->get()
+        );
+
+        return response()->json([
             'summary' => [
                 'totalTransactions' => $totalTransactions,
                 'totalIncome' => number_format((float) $totalIncome, 2, '.', ''),
@@ -116,16 +108,11 @@ class TransactionAnalyticsController extends Controller
                 'netBalance' => number_format((float) $netBalance, 2, '.', ''),
             ],
             'categoryBreakdown' => $categoryBreakdown,
-            'recentTransactions' => $recentTransactions,
             'dailyTotals' => $dailyTotals,
             'topExpenseCategories' => $topExpenseCategories,
             'topIncomeCategories' => $topIncomeCategories,
+            'recentTransactions' => $recentTransactions,
             'period' => $period,
-            'periodLabel' => match ($period) {
-                'week' => 'This Week (' . $start->format('M d') . ' - ' . $end->format('M d, Y') . ')',
-                'year' => 'This Year (' . $start->format('Y') . ')',
-                default => 'This Month (' . $start->format('M Y') . ')',
-            },
         ]);
     }
 }

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, setLayoutProps } from '@inertiajs/vue3';
+import { Head, router, setLayoutProps } from '@inertiajs/vue3';
 import {
     ArrowDownRight,
     ArrowUpRight,
@@ -58,6 +58,7 @@ interface StatCard {
 const props = defineProps<{
     summary: Summary;
     chartData: ChartDataPoint[];
+    chartPeriod: string;
     topExpenses: TopExpense[];
     recentTransactions: RecentTransaction[];
     currentMonth: string;
@@ -70,6 +71,14 @@ const breadcrumbItems: BreadcrumbItem[] = [
 setLayoutProps({ breadcrumbs: breadcrumbItems });
 
 const { currentMonth } = props;
+
+const setChartPeriod = (period: string) => {
+    router.get(
+        '/dashboard',
+        { chart_period: period },
+        { preserveState: true, preserveScroll: true, replace: true },
+    );
+};
 
 const formatChange = (val: number) => {
     const sign = val >= 0 ? '+' : '';
@@ -272,20 +281,41 @@ const buildAreaPath = (key: 'income' | 'expense') => {
                                 Income vs Expenses &middot; {{ currentMonth }}
                             </p>
                         </div>
-                        <div
-                            class="flex items-center gap-4 text-xs text-muted-foreground"
-                        >
-                            <div class="flex items-center gap-1.5">
-                                <div
-                                    class="h-2.5 w-2.5 rounded-sm bg-green-500"
-                                />
-                                Income
+                        <div class="flex items-center gap-2">
+                            <div
+                                class="mr-4 flex items-center gap-4 text-xs text-muted-foreground"
+                            >
+                                <div class="flex items-center gap-1.5">
+                                    <div
+                                        class="h-2.5 w-2.5 rounded-sm bg-green-500"
+                                    />
+                                    Income
+                                </div>
+                                <div class="flex items-center gap-1.5">
+                                    <div
+                                        class="h-2.5 w-2.5 rounded-sm bg-red-500"
+                                    />
+                                    Expense
+                                </div>
                             </div>
-                            <div class="flex items-center gap-1.5">
-                                <div
-                                    class="h-2.5 w-2.5 rounded-sm bg-red-500"
-                                />
-                                Expense
+                            <div class="flex rounded-lg border bg-muted p-0.5">
+                                <button
+                                    v-for="tab in [
+                                        { key: 'daily', label: 'Daily' },
+                                        { key: 'weekly', label: 'Weekly' },
+                                        { key: 'monthly', label: 'Monthly' },
+                                    ]"
+                                    :key="tab.key"
+                                    class="rounded-md px-3 py-1 text-xs font-medium transition-colors"
+                                    :class="
+                                        chartPeriod === tab.key
+                                            ? 'bg-background text-foreground shadow-sm'
+                                            : 'text-muted-foreground hover:text-foreground'
+                                    "
+                                    @click="setChartPeriod(tab.key)"
+                                >
+                                    {{ tab.label }}
+                                </button>
                             </div>
                         </div>
                     </div>

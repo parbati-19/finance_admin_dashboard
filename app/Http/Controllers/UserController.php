@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\Users\StoreUserRequest;
 use App\Http\Requests\Users\UpdateUserRequest;
+use App\Http\Resources\UserCollection;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -39,7 +40,7 @@ class UserController extends Controller
         }
 
         return Inertia::render('Users/Index', [
-            'users' => $query->paginate(10),
+            'users' => new UserCollection($query->paginate(10)),
             'roles' => Role::pluck('name')->toArray(),
         ]);
     }

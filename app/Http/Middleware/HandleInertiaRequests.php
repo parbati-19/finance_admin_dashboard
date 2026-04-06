@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Http\Resources\AuthUserResource;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 use Spatie\Permission\Models\Role;
@@ -46,7 +47,7 @@ class HandleInertiaRequests extends Middleware
                 'error' => fn() => $request->session()->get('error'),
             ],
             'auth' => [
-                'user' => $user,
+                'user' => $user ? new AuthUserResource($user) : null,
                 'role' => $user?->getRoleNames()->first(),
                 'permissions' => $user?->getAllPermissions()->pluck('name')->toArray() ?? [],
                 'roles' => fn() => Role::pluck('name')->toArray(),

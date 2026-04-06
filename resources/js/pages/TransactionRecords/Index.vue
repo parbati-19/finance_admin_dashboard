@@ -10,6 +10,7 @@ import type { ColumnDef } from '@tanstack/vue-table';
 import { ref, h, watch } from 'vue';
 import { toast } from 'vue-sonner';
 import DataTable from '@/components/DataTable.vue';
+import DeleteConfirmDialog from '@/components/DeleteConfirmDialog.vue';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -19,7 +20,6 @@ import {
 } from '@/components/ui/dialog';
 import type { BreadcrumbItem } from '@/types';
 import TransactionForm from './TransactionForm.vue';
-import DeleteConfirmDialog from '@/components/DeleteConfirmDialog.vue';
 
 interface Transaction {
     id: number;
@@ -236,11 +236,6 @@ const handleDeleteConfirm = async () => {
 
 const handleSaved = (message?: string) => {
     dialogOpen.value = false;
-
-    if (message) {
-        toast.success(message);
-    }
-
     router.reload();
 };
 
