@@ -1,0 +1,1862 @@
+openapi: 3.0.3
+info:
+  title: Finance API
+  description: |
+    REST API for the Finance Data Processing and Access Control System.
+    Provides authentication, user management, transaction tracking, analytics, role-based access control, and dashboard endpoints.
+
+    ## Authentication
+    Token-based authentication via **Laravel Sanctum**.
+    Obtain a token from `POST /api/login` or `POST /api/register`, then include it in the `Authorization` header:
+    ```
+    Authorization: Bearer {token}
+    ```
+  version: 1.0.0
+  contact:
+    name: Finance API
+
+servers:
+  - url: http://finance.test
+    description: Local development
+
+tags:
+  - name: Auth
+    description: Authentication endpoints (login, register, logout, current user)
+  - name: Dashboard
+    description: Financial dashboard summary and charts
+  - name: Transactions
+    description: Transaction record CRUD and categories
+  - name: Analytics
+    description: Transaction analytics and reporting
+  - name: Users
+    description: User management CRUD with soft deletes
+  - name: Roles
+    description: Role management and permission sync
+  - name: Permissions
+    description: Permission management
+
+paths:
+  # ──────────────────── Auth ────────────────────
+  /api/login:
+    post:
+      tags: [Auth]
+      summary: Login
+      description: Authenticate with email and password to receive a bearer token.
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Successful login
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    example: 1|jkBPUlCAs36FVAgFWZQG9jbcCSqbKXGN2teN7jYb065df4bc
+                  user:
+                    $ref: '#/components/schemas/AuthUser'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+              example:
+                message: Invalid credentials.
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /api/register:
+    post:
+      tags: [Auth]
+      summary: Register
+      description: Create a new user account and receive a bearer token.
+      operationId: register
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    example: 2|xYz123AbcDefTokenExample
+                  user:
+                    $ref: '#/components/schemas/AuthUser'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /api/user:
+    get:
+      tags: [Auth]
+      summary: Get Authenticated User
+      description: Returns the currently authenticated user's profile, role, and permissions.
+      operationId: getAuthUser
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Authenticated user details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/AuthUser'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+
+  /api/logout:
+    post:
+      tags: [Auth]
+      summary: Logout
+      description: Revoke the current access token.
+      operationId: logout
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successfully logged out
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+              example:
+                message: Logged out.
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+
+  # ──────────────────── Dashboard ────────────────────
+  /api/dashboard:
+    get:
+      tags: [Dashboard]
+      summary: Get Dashboard
+      description: |
+        Returns financial summary, chart data (daily/weekly/monthly), top expenses, and recent transactions.
+        Requires `view dashboard` permission.
+      operationId: getDashboard
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: chart_period
+          in: query
+          description: Chart data grouping period
+          schema:
+            type: string
+            enum: [daily, weekly, monthly]
+            default: daily
+      responses:
+        '200':
+          description: Dashboard data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardResponse'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  # ──────────────────── Transactions ────────────────────
+  /api/transaction-records:
+    get:
+      tags: [Transactions]
+      summary: List Transactions
+      description: |
+        Returns a paginated list of the authenticated user's transactions.
+        Requires `view transactions` permission.
+      operationId: listTransactions
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: search
+          in: query
+          description: Search by category or notes
+          schema:
+            type: string
+        - name: type
+          in: query
+          description: Filter by transaction type (1=Income, 2=Expense, "all"=no filter)
+          schema:
+            oneOf:
+              - type: integer
+                enum: [1, 2]
+              - type: string
+                enum: [all]
+        - name: category
+          in: query
+          description: Filter by exact category name
+          schema:
+            type: string
+        - name: per_page
+          in: query
+          description: Items per page
+          schema:
+            type: integer
+            default: 10
+        - name: page
+          in: query
+          description: Page number
+          schema:
+            type: integer
+            default: 1
+      responses:
+        '200':
+          description: Paginated transaction list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionCollection'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+    post:
+      tags: [Transactions]
+      summary: Create Transaction
+      description: |
+        Create a new transaction record for the authenticated user.
+        Requires `view transactions` permission.
+      operationId: createTransaction
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StoreTransactionRequest'
+      responses:
+        '201':
+          description: Transaction created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Transaction created successfully.
+                  transaction:
+                    $ref: '#/components/schemas/TransactionRecord'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /api/transaction-records/{transactionRecord}:
+    get:
+      tags: [Transactions]
+      summary: Get Transaction
+      description: |
+        Get a single transaction by ID. Only the owner can access their transaction.
+        Requires `view transactions` permission.
+      operationId: getTransaction
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TransactionRecordId'
+      responses:
+        '200':
+          description: Transaction details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  transaction:
+                    $ref: '#/components/schemas/TransactionRecord'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags: [Transactions]
+      summary: Update Transaction
+      description: |
+        Update a transaction record. Only the owner can update their transaction.
+        Requires `view transactions` permission.
+      operationId: updateTransaction
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TransactionRecordId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StoreTransactionRequest'
+      responses:
+        '200':
+          description: Transaction updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Transaction updated successfully.
+                  transaction:
+                    $ref: '#/components/schemas/TransactionRecord'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+    delete:
+      tags: [Transactions]
+      summary: Delete Transaction
+      description: |
+        Soft-delete a transaction record. Only the owner can delete their transaction.
+        Requires `view transactions` permission.
+      operationId: deleteTransaction
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TransactionRecordId'
+      responses:
+        '200':
+          description: Transaction deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+              example:
+                message: Transaction deleted successfully.
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/transaction-records-categories:
+    get:
+      tags: [Transactions]
+      summary: Get Categories & Types
+      description: |
+        Returns the list of distinct transaction categories and available transaction types.
+        Requires `view transactions` permission.
+      operationId: getTransactionCategories
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Categories and types
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  categories:
+                    type: array
+                    items:
+                      type: string
+                    example: [Foods&Beverages, Salary, Transport]
+                  types:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        value:
+                          type: integer
+                        label:
+                          type: string
+                    example:
+                      - value: 1
+                        label: Income
+                      - value: 2
+                        label: Expense
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  # ──────────────────── Analytics ────────────────────
+  /api/transaction-analytics:
+    get:
+      tags: [Analytics]
+      summary: Get Transaction Analytics
+      description: |
+        Returns transaction analytics for a given period including summary, category breakdown,
+        daily totals, top categories, and recent transactions.
+        Requires `view transactions` permission.
+      operationId: getTransactionAnalytics
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: period
+          in: query
+          description: Analytics period
+          schema:
+            type: string
+            enum: [week, month, year]
+            default: month
+      responses:
+        '200':
+          description: Analytics data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalyticsResponse'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  # ──────────────────── Users ────────────────────
+  /api/users:
+    get:
+      tags: [Users]
+      summary: List Users
+      description: |
+        Returns a paginated list of users. Supports filtering by status, email, name, and role.
+        Requires `view users` permission.
+      operationId: listUsers
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          description: Filter by user status
+          schema:
+            type: string
+            enum: [active, inactive, deleted]
+        - name: email
+          in: query
+          description: Filter by email (partial match)
+          schema:
+            type: string
+        - name: name
+          in: query
+          description: Filter by name (partial match)
+          schema:
+            type: string
+        - name: role
+          in: query
+          description: Filter by role name (partial match)
+          schema:
+            type: string
+        - name: per_page
+          in: query
+          description: Items per page
+          schema:
+            type: integer
+            default: 10
+        - name: page
+          in: query
+          description: Page number
+          schema:
+            type: integer
+            default: 1
+      responses:
+        '200':
+          description: Paginated user list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserCollection'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+    post:
+      tags: [Users]
+      summary: Create User
+      description: |
+        Create a new user and assign a role.
+        Requires `view users` permission.
+      operationId: createUser
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StoreUserRequest'
+      responses:
+        '201':
+          description: User created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: User created.
+                  user:
+                    $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /api/users/{user}:
+    get:
+      tags: [Users]
+      summary: Get User
+      description: |
+        Get a single user with their roles and detail.
+        Requires `view users` permission.
+      operationId: getUser
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+      responses:
+        '200':
+          description: User details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags: [Users]
+      summary: Update User
+      description: |
+        Update user fields. All fields are optional — only provided fields are updated.
+        Requires `view users` permission.
+      operationId: updateUser
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserRequest'
+      responses:
+        '200':
+          description: User updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: User updated.
+                  user:
+                    $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+    delete:
+      tags: [Users]
+      summary: Delete User
+      description: |
+        Soft-delete a user.
+        Requires `view users` permission.
+      operationId: deleteUser
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+      responses:
+        '200':
+          description: User soft-deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+              example:
+                message: User deleted.
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/users/{id}/restore:
+    patch:
+      tags: [Users]
+      summary: Restore User
+      description: |
+        Restore a soft-deleted user.
+        Requires `view users` permission.
+      operationId: restoreUser
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of the soft-deleted user
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: User restored
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: User restored.
+                  user:
+                    $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/users/{id}/force-delete:
+    delete:
+      tags: [Users]
+      summary: Permanently Delete User
+      description: |
+        Permanently delete a soft-deleted user. This action cannot be undone.
+        Requires `view users` permission.
+      operationId: forceDeleteUser
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of the soft-deleted user
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: User permanently deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+              example:
+                message: User permanently deleted.
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ──────────────────── Roles ────────────────────
+  /api/roles:
+    get:
+      tags: [Roles]
+      summary: List Roles
+      description: |
+        Returns a paginated list of roles with their permissions.
+        Requires `view users` permission.
+      operationId: listRoles
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: name
+          in: query
+          description: Filter by role name (partial match)
+          schema:
+            type: string
+        - name: per_page
+          in: query
+          description: Items per page
+          schema:
+            type: integer
+            default: 10
+        - name: page
+          in: query
+          description: Page number
+          schema:
+            type: integer
+            default: 1
+      responses:
+        '200':
+          description: Paginated role list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  roles:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Role'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+    post:
+      tags: [Roles]
+      summary: Create Role
+      description: |
+        Create a new role. Guard name defaults to "web".
+        Requires `view users` permission.
+      operationId: createRole
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StoreRoleRequest'
+      responses:
+        '201':
+          description: Role created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Role created succesfully.
+                  role:
+                    $ref: '#/components/schemas/Role'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /api/roles/{role}:
+    get:
+      tags: [Roles]
+      summary: Get Role
+      description: |
+        Get a single role with its permissions.
+        Requires `view users` permission.
+      operationId: getRole
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/RoleId'
+      responses:
+        '200':
+          description: Role details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  role:
+                    $ref: '#/components/schemas/Role'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags: [Roles]
+      summary: Update Role
+      description: |
+        Update a role's name.
+        Requires `view users` permission.
+      operationId: updateRole
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/RoleId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateRoleRequest'
+      responses:
+        '200':
+          description: Role updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Role updated succesfully.
+                  role:
+                    $ref: '#/components/schemas/Role'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+    delete:
+      tags: [Roles]
+      summary: Delete Role
+      description: |
+        Delete a role. Fails with 422 if the role is currently assigned to any users.
+        Requires `view users` permission.
+      operationId: deleteRole
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/RoleId'
+      responses:
+        '200':
+          description: Role deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+              example:
+                message: Role deleted succesfully.
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          description: Role is assigned to users
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+              example:
+                message: Cannot delete a role that is still assigned to users.
+
+  /api/roles/{role}/permissions:
+    put:
+      tags: [Roles]
+      summary: Sync Role Permissions
+      description: |
+        Replace all permissions for a role with the provided permission IDs.
+        Requires `view users` permission.
+      operationId: syncRolePermissions
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/RoleId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SyncPermissionsRequest'
+      responses:
+        '200':
+          description: Permissions synced
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Permissions synced successfully.
+                  role:
+                    $ref: '#/components/schemas/Role'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  # ──────────────────── Permissions ────────────────────
+  /api/permissions:
+    get:
+      tags: [Permissions]
+      summary: List Permissions
+      description: |
+        Returns a paginated list of permissions.
+        Requires `view users` permission.
+      operationId: listPermissions
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: name
+          in: query
+          description: Filter by permission name (partial match)
+          schema:
+            type: string
+        - name: per_page
+          in: query
+          description: Items per page
+          schema:
+            type: integer
+            default: 10
+        - name: page
+          in: query
+          description: Page number
+          schema:
+            type: integer
+            default: 1
+      responses:
+        '200':
+          description: Paginated permission list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  permissions:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Permission'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+    post:
+      tags: [Permissions]
+      summary: Create Permission
+      description: |
+        Create a new permission. Guard name defaults to "web".
+        Requires `view users` permission.
+      operationId: createPermission
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StorePermissionRequest'
+      responses:
+        '201':
+          description: Permission created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Permission created.
+                  permission:
+                    $ref: '#/components/schemas/Permission'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /api/permissions/{permission}:
+    get:
+      tags: [Permissions]
+      summary: Get Permission
+      description: |
+        Get a single permission by ID.
+        Requires `view users` permission.
+      operationId: getPermission
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PermissionId'
+      responses:
+        '200':
+          description: Permission details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  permission:
+                    $ref: '#/components/schemas/Permission'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags: [Permissions]
+      summary: Update Permission
+      description: |
+        Update a permission's name.
+        Requires `view users` permission.
+      operationId: updatePermission
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PermissionId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePermissionRequest'
+      responses:
+        '200':
+          description: Permission updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Permission updated.
+                  permission:
+                    $ref: '#/components/schemas/Permission'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+    delete:
+      tags: [Permissions]
+      summary: Delete Permission
+      description: |
+        Delete a permission.
+        Requires `view users` permission.
+      operationId: deletePermission
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PermissionId'
+      responses:
+        '200':
+          description: Permission deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+              example:
+                message: Permission deleted.
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+components:
+  # ──────────────────── Security Schemes ────────────────────
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: Sanctum token obtained from POST /api/login or POST /api/register
+
+  # ──────────────────── Parameters ────────────────────
+  parameters:
+    TransactionRecordId:
+      name: transactionRecord
+      in: path
+      required: true
+      description: Transaction record ID
+      schema:
+        type: integer
+        example: 3
+
+    UserId:
+      name: user
+      in: path
+      required: true
+      description: User ID
+      schema:
+        type: integer
+        example: 13
+
+    RoleId:
+      name: role
+      in: path
+      required: true
+      description: Role ID
+      schema:
+        type: integer
+        example: 4
+
+    PermissionId:
+      name: permission
+      in: path
+      required: true
+      description: Permission ID
+      schema:
+        type: integer
+        example: 36
+
+  # ──────────────────── Reusable Responses ────────────────────
+  responses:
+    Unauthenticated:
+      description: Unauthenticated — missing or invalid token
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/MessageResponse'
+          example:
+            message: Unauthenticated.
+
+    Forbidden:
+      description: Forbidden — insufficient permissions
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/MessageResponse'
+          example:
+            message: User does not have the right permissions.
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/MessageResponse'
+          example:
+            message: Not found.
+
+    ValidationError:
+      description: Validation error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ValidationErrorResponse'
+
+  # ──────────────────── Schemas ────────────────────
+  schemas:
+    # ── Generic ──
+    MessageResponse:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+        - message
+
+    ValidationErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: The email field is required.
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+          example:
+            email:
+              - The email field is required.
+            password:
+              - The password field is required.
+
+    PaginationMeta:
+      type: object
+      properties:
+        current_page:
+          type: integer
+          example: 1
+        last_page:
+          type: integer
+          example: 5
+        per_page:
+          type: integer
+          example: 10
+        total:
+          type: integer
+          example: 47
+        from:
+          type: integer
+          nullable: true
+          example: 1
+        to:
+          type: integer
+          nullable: true
+          example: 10
+
+    # ── Auth ──
+    AuthUser:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: Admin User
+        email:
+          type: string
+          format: email
+          example: admin@finance.com
+        status:
+          type: integer
+          enum: [0, 1]
+          description: "0 = Inactive, 1 = Active"
+          example: 1
+        email_verified:
+          type: boolean
+          example: true
+        email_verified_at:
+          type: string
+          format: date-time
+          nullable: true
+          example: "2026-04-04T07:00:00.000000Z"
+        two_factor_enabled:
+          type: boolean
+          example: false
+        role:
+          type: string
+          nullable: true
+          example: Admin
+        permissions:
+          type: array
+          items:
+            type: string
+          example: [view dashboard, view transactions, view users, view roles, view permissions]
+        created_at:
+          type: string
+          format: date-time
+          nullable: true
+          example: "2026-04-04T07:00:00.000000Z"
+
+    # ── Users ──
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 13
+        name:
+          type: string
+          example: John Doe
+        email:
+          type: string
+          format: email
+          example: john@finance.com
+        status:
+          type: string
+          enum: [Active, Inactive]
+          example: Active
+        role:
+          type: string
+          nullable: true
+          example: Analyst
+        email_verified_at:
+          type: string
+          format: date-time
+          nullable: true
+        deleted:
+          type: boolean
+          example: false
+        created_at:
+          type: string
+          format: date-time
+          nullable: true
+        updated_at:
+          type: string
+          format: date-time
+          nullable: true
+        deleted_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: Only present when user is soft-deleted
+        detail:
+          $ref: '#/components/schemas/UserDetail'
+
+    UserDetail:
+      type: object
+      nullable: true
+      properties:
+        id:
+          type: integer
+        user_id:
+          type: integer
+        user_type:
+          type: string
+          nullable: true
+          enum: [Individual, Company]
+        company_name:
+          type: string
+          nullable: true
+        company_pan:
+          type: string
+          nullable: true
+        contact_person:
+          type: string
+          nullable: true
+        company_address:
+          type: string
+          nullable: true
+        company_phone:
+          type: string
+          nullable: true
+        personal_phone:
+          type: string
+          nullable: true
+        company_email:
+          type: string
+          nullable: true
+        is_verified:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          nullable: true
+        updated_at:
+          type: string
+          format: date-time
+          nullable: true
+
+    UserCollection:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+
+    # ── Transactions ──
+    TransactionRecord:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 3
+        user_id:
+          type: integer
+          example: 1
+        amount:
+          type: string
+          description: Decimal value as string
+          example: "1000.00"
+        type:
+          type: integer
+          enum: [1, 2]
+          description: "1 = Income, 2 = Expense"
+          example: 2
+        type_label:
+          type: string
+          enum: [Income, Expense]
+          example: Expense
+        category:
+          type: string
+          example: Foods&Beverages
+        date:
+          type: string
+          format: date
+          example: "2026-04-05"
+        notes:
+          type: string
+          nullable: true
+          example: Office lunch
+        created_at:
+          type: string
+          format: date-time
+          nullable: true
+        updated_at:
+          type: string
+          format: date-time
+          nullable: true
+
+    TransactionCollection:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/TransactionRecord'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+
+    # ── Roles ──
+    Role:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: Admin
+        guard_name:
+          type: string
+          example: web
+        permissions:
+          type: array
+          items:
+            type: string
+          description: Permission names (when loaded)
+          example: [view dashboard, view transactions, view users]
+        created_at:
+          type: string
+          format: date-time
+          nullable: true
+        updated_at:
+          type: string
+          format: date-time
+          nullable: true
+
+    # ── Permissions ──
+    Permission:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 36
+        name:
+          type: string
+          example: view dashboard
+        guard_name:
+          type: string
+          example: web
+        created_at:
+          type: string
+          format: date-time
+          nullable: true
+        updated_at:
+          type: string
+          format: date-time
+          nullable: true
+
+    # ── Dashboard ──
+    DashboardResponse:
+      type: object
+      properties:
+        summary:
+          type: object
+          properties:
+            totalTransactions:
+              type: integer
+              example: 25
+            totalIncome:
+              type: string
+              example: "15000.00"
+            totalExpense:
+              type: string
+              example: "8500.00"
+            netBalance:
+              type: string
+              example: "6500.00"
+            weekIncome:
+              type: string
+              example: "3200.00"
+            weekExpense:
+              type: string
+              example: "1800.00"
+            newCustomers:
+              type: integer
+              example: 3
+            customerChange:
+              type: number
+              format: float
+              example: 50.0
+            incomeChange:
+              type: number
+              format: float
+              example: 12.5
+            expenseChange:
+              type: number
+              format: float
+              example: -5.3
+            totalChange:
+              type: number
+              format: float
+              example: 8.0
+        chartData:
+          type: array
+          items:
+            type: object
+            properties:
+              date:
+                type: string
+                description: Label varies by period (e.g. "Apr 05", "2026-W14", "Apr 2026")
+                example: Apr 05
+              income:
+                type: number
+                format: float
+                example: 1500.00
+              expense:
+                type: number
+                format: float
+                example: 800.50
+        chartPeriod:
+          type: string
+          enum: [daily, weekly, monthly]
+          example: daily
+        topExpenses:
+          type: array
+          items:
+            type: object
+            properties:
+              category:
+                type: string
+                example: Foods&Beverages
+              total:
+                type: string
+                example: "3500.00"
+              count:
+                type: integer
+                example: 12
+              percentage:
+                type: number
+                format: float
+                example: 41.18
+        recentTransactions:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              amount:
+                type: string
+              type:
+                type: integer
+                enum: [1, 2]
+              type_label:
+                type: string
+                enum: [Income, Expense]
+              category:
+                type: string
+              date:
+                type: string
+                format: date
+              notes:
+                type: string
+                nullable: true
+        currentMonth:
+          type: string
+          example: April 2026
+
+    # ── Analytics ──
+    AnalyticsResponse:
+      type: object
+      properties:
+        summary:
+          type: object
+          properties:
+            totalTransactions:
+              type: integer
+              example: 45
+            totalIncome:
+              type: string
+              example: "25000.00"
+            totalExpense:
+              type: string
+              example: "18000.00"
+            netBalance:
+              type: string
+              example: "7000.00"
+        categoryBreakdown:
+          type: array
+          items:
+            type: object
+            properties:
+              category:
+                type: string
+                example: Salary
+              type:
+                type: integer
+                enum: [1, 2]
+              type_label:
+                type: string
+                enum: [Income, Expense]
+              total:
+                type: string
+                example: "5000.00"
+              count:
+                type: integer
+                example: 2
+        dailyTotals:
+          type: array
+          items:
+            type: object
+            properties:
+              date:
+                type: string
+                format: date
+                example: "2026-04-05"
+              income:
+                type: string
+                example: "1500.00"
+              expense:
+                type: string
+                example: "800.00"
+        topExpenseCategories:
+          type: array
+          items:
+            $ref: '#/components/schemas/CategorySummary'
+        topIncomeCategories:
+          type: array
+          items:
+            $ref: '#/components/schemas/CategorySummary'
+        recentTransactions:
+          type: array
+          items:
+            $ref: '#/components/schemas/TransactionRecord'
+        period:
+          type: string
+          enum: [week, month, year]
+          example: month
+
+    CategorySummary:
+      type: object
+      properties:
+        category:
+          type: string
+          example: Foods&Beverages
+        total:
+          type: string
+          example: "3500.00"
+        count:
+          type: integer
+          example: 12
+        percentage:
+          type: number
+          format: float
+          example: 41.18
+
+    # ── Request Bodies ──
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+          example: admin@finance.com
+        password:
+          type: string
+          format: password
+          example: admin@123
+
+    RegisterRequest:
+      type: object
+      required: [name, email, password, password_confirmation]
+      properties:
+        name:
+          type: string
+          maxLength: 255
+          example: John Doe
+        email:
+          type: string
+          format: email
+          maxLength: 255
+          example: john@finance.com
+        password:
+          type: string
+          format: password
+          minLength: 8
+          example: password123
+        password_confirmation:
+          type: string
+          format: password
+          example: password123
+
+    StoreTransactionRequest:
+      type: object
+      required: [amount, type, category, date]
+      properties:
+        amount:
+          type: number
+          format: float
+          minimum: 0.01
+          example: 1000
+        type:
+          type: integer
+          enum: [1, 2]
+          description: "1 = Income, 2 = Expense"
+          example: 2
+        category:
+          type: string
+          maxLength: 255
+          example: Foods&Beverages
+        date:
+          type: string
+          format: date
+          example: "2026-04-05"
+        notes:
+          type: string
+          nullable: true
+          maxLength: 5000
+          example: Lunch at office cafeteria
+
+    StoreUserRequest:
+      type: object
+      required: [name, email, password, password_confirmation, status, role]
+      properties:
+        name:
+          type: string
+          maxLength: 255
+          example: Root
+        email:
+          type: string
+          format: email
+          example: root@finance.com
+        password:
+          type: string
+          format: password
+          minLength: 8
+          example: root@1234
+        password_confirmation:
+          type: string
+          format: password
+          example: root@1234
+        status:
+          type: integer
+          enum: [0, 1]
+          description: "0 = Inactive, 1 = Active"
+          example: 1
+        role:
+          type: string
+          description: Must be an existing role name
+          example: Visitor
+
+    UpdateUserRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 255
+          nullable: true
+          example: Updated Name
+        email:
+          type: string
+          format: email
+          nullable: true
+          example: updated@finance.com
+        password:
+          type: string
+          format: password
+          minLength: 8
+          nullable: true
+        password_confirmation:
+          type: string
+          format: password
+          nullable: true
+        status:
+          type: integer
+          enum: [0, 1]
+          nullable: true
+        role:
+          type: string
+          nullable: true
+          description: Must be an existing role name
+
+    StoreRoleRequest:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+          maxLength: 255
+          example: User
+        guard_name:
+          type: string
+          maxLength: 255
+          nullable: true
+          description: Defaults to "web"
+
+    UpdateRoleRequest:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+          maxLength: 255
+          example: Admin
+        guard_name:
+          type: string
+          maxLength: 255
+          nullable: true
+
+    StorePermissionRequest:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+          maxLength: 255
+          example: view user-details
+        guard_name:
+          type: string
+          maxLength: 255
+          nullable: true
+          description: Defaults to "web"
+
+    UpdatePermissionRequest:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+          maxLength: 255
+          example: view userDetails
+        guard_name:
+          type: string
+          maxLength: 255
+          nullable: true
+
+    SyncPermissionsRequest:
+      type: object
+      required: [permissions]
+      properties:
+        permissions:
+          type: array
+          items:
+            type: integer
+            description: Permission ID (must exist in permissions table)
+          example: [36, 37, 38]

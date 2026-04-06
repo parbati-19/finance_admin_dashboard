@@ -1,267 +1,463 @@
-# Finance Data Processing & Access Control Backend
-
-## 📌 Overview
-
-This project is a backend system built to support a finance dashboard application where users interact with financial data based on their roles.
-
-The system focuses on:
-
-* Clean API design
-* Logical data modeling
-* Role-based access control
-* Aggregated financial insights
-
-The goal is not just CRUD functionality, but to demonstrate **backend architecture, maintainability, and clarity of thought**.
+<p align="center">
+  <h1 align="center">Finance Data Processing and Access Control System</h1>
+  <p align="center">
+    A full-stack finance management and access control backend built with Laravel 13, Vue 3, Inertia.js, and Tailwind CSS.
+    <br />
+    Features role-based access control, two-factor authentication, transaction tracking, analytics dashboards, and a complete REST API.
+  </p>
+</p>
 
 ---
 
-## 🎯 Objective
+## Table of Contents
 
-This project evaluates backend engineering capabilities including:
-
-* Designing scalable APIs
-* Structuring business logic effectively
-* Handling data integrity and validation
-* Implementing access control
-* Delivering clean and maintainable code
-
----
-
-## 🧠 Design Philosophy
-
-* **Separation of Concerns** → Controllers, Services, Repositories
-* **Readable & Maintainable Code** → Clear naming and modular structure
-* **Domain-Oriented Thinking** → Finance-centric modeling
-* **Explicit Access Control** → Role-based restrictions enforced at backend level
-* **Minimal but Complete** → No unnecessary complexity
+- [Tech Stack](#tech-stack)
+- [Features](#features)
+- [Prerequisites](#prerequisites)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Project Structure](#project-structure)
+- [Authentication](#authentication)
+- [Authorization](#authorization)
+- [API Reference](#api-reference)
+  - [API Documentation (Postman / Swagger)](#api-documentation-postman--swagger)
+- [Database Schema](#database-schema)
+- [Testing](#testing)
+- [Code Quality](#code-quality)
+- [License](#license)
 
 ---
 
-## 🏗️ Architecture
+## Tech Stack
 
-```
-Controllers → Services → Repositories → Models → Database
-```
-
-### Key Layers
-
-* **Controllers**
-
-  * Handle HTTP requests
-  * Delegate logic to services
-
-* **Services**
-
-  * Contain business logic (finance calculations, rules)
-
-* **Repositories**
-
-  * Handle database interactions
-
-* **Policies / Middleware**
-
-  * Enforce access control
+| Layer                | Technology                                   |
+| -------------------- | -------------------------------------------- |
+| **Backend**          | PHP 8.3+, Laravel 13                         |
+| **Frontend**         | Vue 3, TypeScript, Tailwind CSS 4            |
+| **SPA Bridge**       | Inertia.js 3                                 |
+| **UI Components**    | shadcn-vue (New York v4 style)               |
+| **Icons**            | Lucide Vue Next                              |
+| **Data Tables**      | TanStack Vue Table                           |
+| **Auth**             | Laravel Fortify (web), Laravel Sanctum (API) |
+| **Authorization**    | Spatie Laravel Permission                    |
+| **Build Tool**       | Vite 8                                       |
+| **Route Generation** | Laravel Wayfinder                            |
+| **Testing**          | Pest 4                                       |
+| **Linting**          | ESLint, Prettier, Laravel Pint               |
 
 ---
 
-## 👥 User & Role Management
+## Features
 
-### Roles
+### Core
 
-| Role    | Permissions                        |
-| ------- | ---------------------------------- |
-| Viewer  | Read-only access to dashboard data |
-| Analyst | View records + analytics           |
-| Admin   | Full CRUD + user management        |
+- **Dashboard** — New Users summary cards, Financial summary cards with income/expense trends, interactive chart with daily/weekly/monthly views, top expenses, and recent transactions
+- **Transaction Records** — Full CRUD with soft deletes, filterable by type (Income/Expense), category, and date range
+- **Transaction Analytics** — Period-based analytics (weekly, monthly, yearly) with income vs expense charts
+- **User Management** — Full CRUD with soft deletes, restore, and permanent delete capabilities along with roles and permissions
 
-### Features
+### Authentication & Security
 
-* Create and manage users
-* Assign roles
-* Activate / deactivate users
-* Enforce role-based restrictions
+- Email & password login with rate limiting
+- User registration with email verification
+- Two-factor authentication (TOTP) with recovery codes
+- Password reset via email
+- Password confirmation for sensitive actions
+- API token authentication via Sanctum
 
----
+### Authorization
 
-## 💰 Financial Records
+- Role-based access control (RBAC) with Spatie Laravel Permission
+- Pre-configured roles: **Admin**, **Analyst**, **Visitor**
+- Granular permissions: `view dashboard`, `view transactions`, `view users`, `view roles`, `view permissions`
+- Role & permission management UI with sync capabilities
+- Runtime role switching
 
-### Fields
+### UI/UX
 
-* `amount`
-* `type` (income / expense)
-* `category`
-* `date`
-* `description`
-
-### Supported Operations
-
-* Create records
-* View records
-* Update records
-* Delete records
-* Filter by:
-
-  * Date
-  * Category
-  * Type
+- Responsive layout with collapsible sidebar
+- Light / Dark / System theme support
+- Toast notifications
+- Breadcrumb navigation
+- Settings pages (Profile, Security, Appearance)
 
 ---
 
-## 📊 Dashboard Summary APIs
+## Prerequisites
 
-The system provides aggregated financial insights:
-
-* Total Income
-* Total Expenses
-* Net Balance
-* Category-wise totals
-* Recent transactions
-* Monthly trends
-
-### Purpose
-
-These endpoints demonstrate:
-
-* Data aggregation
-* Efficient querying
-* Backend-driven analytics
+- **PHP** >= 8.3
+- **Composer** >= 2.x
+- **Node.js** >= 20.x
+- **npm** >= 10.x
+- **Database** — SQLite (default), MySQL, or PostgreSQL
 
 ---
 
-## 🔐 Access Control
+## Installation
 
-Access control is enforced at the backend using:
-
-* Middleware / Policies
-
-### Rules
-
-* Viewer → Read-only
-* Analyst → Read + analytics
-* Admin → Full access
-
-Unauthorized actions return proper error responses.
-
----
-
-## ✅ Validation & Error Handling
-
-* Request validation at entry point
-* Structured error responses
-* Proper HTTP status codes
-
-Examples:
-
-* `400` → Validation error
-* `403` → Forbidden
-* `404` → Not found
-* `500` → Server error
-
----
-
-## 🗄️ Data Persistence
-
-* Uses a relational database (e.g., MySQL / SQLite)
-* Structured schema for:
-
-  * Users
-  * Roles
-  * Financial records
-
-If simplified storage is used, it is clearly documented.
-
----
-
-## ⚙️ Setup Instructions
+### Quick Setup
 
 ```bash
-# Clone repository
-git clone <repo-url>
+git clone <repository-url> finance
+cd finance
+composer setup
+```
 
-# Install dependencies
+The `composer setup` command runs the following automatically:
+
+1. `composer install` — installs PHP dependencies
+2. Copies `.env.example` → `.env`
+3. `php artisan key:generate` — generates the application key
+4. `php artisan migrate` — runs database migrations
+5. `npm install` — installs frontend dependencies
+6. `npm run build` — compiles frontend assets
+
+### Manual Setup
+
+```bash
+# Install PHP dependencies
 composer install
 
-# Setup environment
+# Copy environment file and generate key
 cp .env.example .env
-
-# Generate key
 php artisan key:generate
 
-# Run migrations
+# Run migrations and seed the database
 php artisan migrate
+php artisan db:seed
 
-# Start server
-php artisan serve
+# Install frontend dependencies and build
+npm install
+npm run build
+```
+
+### Default Seed Data
+
+| Role    | Permissions         |
+| ------- | ------------------- |
+| Admin   | All permissions     |
+| Analyst | `view transactions` |
+| Visitor | `view dashboard`    |
+
+**Test Account:** `test@example.com` / `password` (Admin role)
+
+---
+
+## Usage
+
+### Development Server
+
+```bash
+composer dev
+```
+
+This concurrently starts:
+
+- **Laravel server** — `php artisan serve` → `http://localhost:8000`
+- **Queue worker** — `php artisan queue:listen`
+- **Vite dev server** — `npm run dev` → HMR on `http://localhost:5173`
+
+### Production Build
+
+```bash
+npm run build
 ```
 
 ---
 
-## 🔌 API Overview
+## Project Structure
 
-### Auth / Users
-
-* `POST /users`
-* `GET /users`
-* `PATCH /users/{id}`
-* `DELETE /users/{id}`
-
-### Financial Records
-
-* `POST /records`
-* `GET /records`
-* `PUT /records/{id}`
-* `DELETE /records/{id}`
-
-### Dashboard
-
-* `GET /dashboard/summary`
-* `GET /dashboard/trends`
-
----
-
-## ⚡ Optional Enhancements
-
-* Authentication (JWT / Sanctum)
-* Pagination
-* Search & filtering
-* Soft deletes
-* API documentation (Swagger / Postman)
-* Unit / feature tests
-
----
-
-## 🧪 Assumptions
-
-* Roles are predefined (Viewer, Analyst, Admin)
-* Authentication may be simplified or mocked
-* Financial records are single-currency
-* Focus is backend logic, not UI
-
----
-
-## 📈 Tradeoffs
-
-* Prioritized clarity over over-engineering
-* Limited feature scope to maintain focus
-* Chose simple schema for readability
+```
+├── app/
+│   ├── Actions/Fortify/          # Auth actions (create user, reset password)
+│   ├── Http/
+│   │   ├── Controllers/          # Web controllers (Inertia responses)
+│   │   │   ├── Api/              # API controllers (JSON responses)
+│   │   │   └── Settings/         # User settings controllers
+│   │   ├── Middleware/            # HandleInertiaRequests, HandleAppearance
+│   │   ├── Requests/             # Form request validation classes
+│   │   └── Resources/            # API resource transformers
+│   ├── Models/
+│   │   ├── Enums/                # TransactionType, UserStatus, UserType
+│   │   ├── User.php
+│   │   ├── UserDetail.php
+│   │   └── TransactionRecord.php
+│   └── Providers/
+├── resources/
+│   ├── js/
+│   │   ├── components/           # Reusable Vue components + shadcn-vue UI
+│   │   ├── composables/          # Vue composables (useToast, useTwoFactorAuth, etc.)
+│   │   ├── layouts/              # App, Auth, and Settings layouts
+│   │   ├── pages/                # Vue page components
+│   │   │   ├── Dashboard.vue
+│   │   │   ├── TransactionRecords/
+│   │   │   ├── Users/
+│   │   │   ├── Roles/
+│   │   │   ├── Permissions/
+│   │   │   ├── auth/
+│   │   │   └── settings/
+│   │   └── types/                # TypeScript type definitions
+│   └── css/
+├── routes/
+│   ├── web.php                   # Web routes (Inertia)
+│   ├── api.php                   # API routes (Sanctum)
+│   ├── settings.php              # Settings routes
+│   └── console.php               # Artisan commands
+├── database/
+│   ├── migrations/               # 10 migration files
+│   ├── factories/
+│   └── seeders/
+└── tests/
+    ├── Feature/                  # Feature tests (auth, dashboard, settings)
+    └── Unit/
+```
 
 ---
 
-## 🧩 Evaluation Alignment
+## Authentication
 
-This project demonstrates:
+### Web Authentication (Fortify)
 
-* ✔ Backend structure & design
-* ✔ Logical business implementation
-* ✔ Role-based access control
-* ✔ Clean and maintainable code
-* ✔ Proper validation and error handling
-* ✔ Thoughtful API design
+All web auth is handled by Laravel Fortify with Inertia-rendered Vue pages:
+
+| Feature              | Route                         |
+| -------------------- | ----------------------------- |
+| Login                | `GET /login`                  |
+| Register             | `GET /register`               |
+| Forgot Password      | `GET /forgot-password`        |
+| Reset Password       | `GET /reset-password/{token}` |
+| Email Verification   | `GET /email/verify`           |
+| Two-Factor Challenge | `GET /two-factor-challenge`   |
+| Confirm Password     | `GET /user/confirm-password`  |
+
+### API Authentication (Sanctum)
+
+Token-based authentication for external API consumers:
+
+```bash
+# Login and get token
+curl -X POST http://localhost:8000/api/login \
+  -H "Content-Type: application/json" \
+  -d '{"email": "test@example.com", "password": "password"}'
+
+# Use token in subsequent requests
+curl http://localhost:8000/api/dashboard \
+  -H "Authorization: Bearer {token}"
+
+# Logout (revoke token)
+curl -X POST http://localhost:8000/api/logout \
+  -H "Authorization: Bearer {token}"
+```
 
 ---
 
-## 🚀 Conclusion
+## Authorization
 
-This backend is designed as a **clear, maintainable, and logically structured system** that reflects real-world backend engineering practices.
+### Roles & Permissions
 
-The focus is not just on making things work, but on **how they are built, organized, and reasoned about**.
+Permissions are enforced at the route level via middleware and can be managed through the UI or API.
+
+| Permission          | Description                     | Roles          |
+| ------------------- | ------------------------------- | -------------- |
+| `view dashboard`    | Access dashboard                | Admin, Visitor |
+| `view transactions` | Access transactions & analytics | Admin, Analyst |
+| `view users`        | Access user management          | Admin          |
+| `view roles`        | Access role management          | Admin          |
+| `view permissions`  | Access permission management    | Admin          |
+
+### Sidebar Navigation
+
+Navigation items are dynamically shown/hidden based on the authenticated user's permissions.
+
+---
+
+## API Reference
+
+All API routes are prefixed with `/api` and return JSON responses.
+
+### Public Endpoints
+
+| Method | Endpoint        | Description                             |
+| ------ | --------------- | --------------------------------------- |
+| `POST` | `/api/login`    | Authenticate and receive a bearer token |
+| `POST` | `/api/register` | Register a new user account             |
+
+### Protected Endpoints (require `Authorization: Bearer {token}`)
+
+#### Auth
+
+| Method | Endpoint      | Description                    |
+| ------ | ------------- | ------------------------------ |
+| `GET`  | `/api/user`   | Get authenticated user profile |
+| `POST` | `/api/logout` | Revoke current token           |
+
+#### Dashboard (`view dashboard` permission)
+
+| Method | Endpoint         | Description                                                      |
+| ------ | ---------------- | ---------------------------------------------------------------- |
+| `GET`  | `/api/dashboard` | Financial summary, chart data, top expenses, recent transactions |
+
+#### Transactions (`view transactions` permission)
+
+| Method   | Endpoint                              | Description                   |
+| -------- | ------------------------------------- | ----------------------------- |
+| `GET`    | `/api/transaction-records`            | List transactions (paginated) |
+| `POST`   | `/api/transaction-records`            | Create a transaction          |
+| `GET`    | `/api/transaction-records/{id}`       | Get transaction details       |
+| `PUT`    | `/api/transaction-records/{id}`       | Update a transaction          |
+| `DELETE` | `/api/transaction-records/{id}`       | Delete a transaction          |
+| `GET`    | `/api/transaction-records-categories` | List available categories     |
+| `GET`    | `/api/transaction-analytics`          | Period-based analytics        |
+
+#### Users (`view users` permission)
+
+| Method   | Endpoint                       | Description                        |
+| -------- | ------------------------------ | ---------------------------------- |
+| `GET`    | `/api/users`                   | List users (paginated, filterable) |
+| `POST`   | `/api/users`                   | Create a user                      |
+| `GET`    | `/api/users/{id}`              | Get user details                   |
+| `PUT`    | `/api/users/{id}`              | Update a user                      |
+| `DELETE` | `/api/users/{id}`              | Soft-delete a user                 |
+| `PATCH`  | `/api/users/{id}/restore`      | Restore a soft-deleted user        |
+| `DELETE` | `/api/users/{id}/force-delete` | Permanently delete a user          |
+
+#### Roles & Permissions (`view users` permission)
+
+| Method   | Endpoint                      | Description                                |
+| -------- | ----------------------------- | ------------------------------------------ |
+| `GET`    | `/api/roles`                  | List all roles                             |
+| `POST`   | `/api/roles`                  | Create a role                              |
+| `PUT`    | `/api/roles/{id}`             | Update a role                              |
+| `DELETE` | `/api/roles/{id}`             | Delete a role (fails if assigned to users) |
+| `PUT`    | `/api/roles/{id}/permissions` | Sync permissions to a role                 |
+| `GET`    | `/api/permissions`            | List all permissions                       |
+| `POST`   | `/api/permissions`            | Create a permission                        |
+| `PUT`    | `/api/permissions/{id}`       | Update a permission                        |
+| `DELETE` | `/api/permissions/{id}`       | Delete a permission                        |
+
+### API Documentation (Postman / Swagger)
+
+An **OpenAPI 3.0** specification is included at [`openapi.yaml`](openapi.yaml) in the project root. You can use it to explore and test all 34 API endpoints interactively.
+
+> **📖 [View API Documentation in Swagger UI](https://petstore.swagger.io/?url=https://raw.githubusercontent.com/parbati-19/finance_admin_dashboard/main/openapi.yaml)**
+
+#### Import into Postman
+
+1. Open **Postman** → **Import** (top-left)
+2. Drag and drop `openapi.yaml` or click **Upload Files** and select it
+3. Postman will generate a collection with all endpoints, request bodies, and example schemas
+4. Set the `baseUrl` variable to `http://localhost:8000` (or your local domain)
+5. Call `POST /api/login` first, copy the token, and set the `Authorization` header to `Bearer {token}` (or use a Postman environment variable)
+
+#### Use with Swagger UI
+
+**Option A — Swagger Editor (browser)**
+
+1. Open [http://editor.swagger.io](http://editor.swagger.io)
+2. Go to **File → Import file** and select `openapi.yaml`
+3. Use the **Try it out** buttons to test endpoints
+
+> **Note:** Use the **HTTP** version of the Swagger Editor (`http://`, not `https://`). The HTTPS editor cannot call a local HTTP API due to browser mixed-content restrictions.
+
+**Option B — Swagger UI (Docker)**
+
+```bash
+docker run -p 8080:8080 \
+  -e SWAGGER_JSON=/spec/openapi.yaml \
+  -v $(pwd)/openapi.yaml:/spec/openapi.yaml \
+  swaggerapi/swagger-ui
+```
+
+Then open `http://localhost:8080` in your browser.
+
+#### Authenticate in Swagger UI
+
+1. Click the **Authorize** button (🔒) at the top
+2. Enter your bearer token (obtained from `POST /api/login`)
+3. Click **Authorize** — all subsequent requests will include the token
+
+---
+
+## Database Schema
+
+### Models
+
+```
+User                     UserDetail                 TransactionRecord
+├── id                   ├── id                     ├── id
+├── name                 ├── user_id (FK)           ├── user_id (FK)
+├── email (unique)       ├── user_type (enum)       ├── amount (decimal 12,2)
+├── password             ├── company_name           ├── type (enum: Income/Expense)
+├── status (0/1)         ├── company_pan            ├── category
+├── email_verified_at    ├── contact_person         ├── date
+├── two_factor_*         ├── company_address        ├── notes
+├── remember_token       ├── company_phone          ├── deleted_at
+├── deleted_at           ├── personal_phone         └── timestamps
+└── timestamps           ├── company_email
+                         ├── is_verified
+                         ├── deleted_at
+                         └── timestamps
+```
+
+### Enums
+
+| Enum              | Values                          |
+| ----------------- | ------------------------------- |
+| `TransactionType` | `Income (1)`, `Expense (2)`     |
+| `UserStatus`      | `Active (1)`, `Inactive (0)`    |
+| `UserType`        | `Individual (0)`, `Company (1)` |
+
+---
+
+## Testing
+
+```bash
+# Run all tests
+php artisan test
+
+# Run with Composer (includes lint check)
+composer test
+
+# Run specific test file
+php artisan test --filter=AuthenticationTest
+```
+
+### Test Suite
+
+| Category  | Tests                                                                                                |
+| --------- | ---------------------------------------------------------------------------------------------------- |
+| Auth      | Login, Registration, Email Verification, Password Reset, Password Confirmation, Two-Factor Challenge |
+| Dashboard | Access control, data rendering                                                                       |
+| Settings  | Profile update, Security/password changes                                                            |
+
+**Test Environment:** SQLite in-memory, array-based cache/session/mail, sync queue.
+
+---
+
+## Code Quality
+
+```bash
+# PHP linting (Laravel Pint)
+composer lint              # Fix issues
+composer lint:check        # Check only
+
+# Frontend linting (ESLint)
+npm run lint               # Fix issues
+npm run lint:check         # Check only
+
+# Frontend formatting (Prettier)
+npm run format             # Fix formatting
+npm run format:check       # Check only
+
+# TypeScript type checking
+npm run types:check
+
+# Full CI check (all of the above)
+composer ci:check
+```
+
+---
+
+## License
+
+This project is open-sourced software licensed under the [MIT License](https://opensource.org/licenses/MIT).
