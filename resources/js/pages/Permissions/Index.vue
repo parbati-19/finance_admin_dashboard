@@ -10,6 +10,7 @@ import type { ColumnDef } from '@tanstack/vue-table';
 import { ref, h, watch } from 'vue';
 import { toast } from 'vue-sonner';
 import DataTable from '@/components/DataTable.vue';
+import DeleteConfirmDialog from '@/components/DeleteConfirmDialog.vue';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -18,10 +19,10 @@ import {
     DialogTitle,
     DialogFooter,
 } from '@/components/ui/dialog';
-import DeleteConfirmDialog from '@/components/DeleteConfirmDialog.vue';
 import { destroy as destroyPermission } from '@/routes/permissions';
 import type { BreadcrumbItem } from '@/types';
 import PermissionForm from './PermissionForm.vue';
+import { Input } from '@/components/ui/input';
 
 const page = usePage();
 const permissions = ref(
@@ -30,7 +31,8 @@ const permissions = ref(
         [],
 );
 const isLoading = ref(false);
-const search = ref('');
+const filters = (page.props as any).filters ?? {};
+const search = ref(filters.name ?? '');
 
 // Dialog state for create/edit permission
 const permissionDialogOpen = ref(false);
@@ -94,6 +96,20 @@ watch(
         permissions.value = val?.data ?? val ?? [];
     },
 );
+
+let searchTimeout: ReturnType<typeof setTimeout>;
+watch(search, (val) => {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+        router.get(
+            '/permissions',
+            {
+                name: val || undefined,
+            },
+            { preserveState: true, replace: true },
+        );
+    }, 300);
+});
 
 const handlePermissionSaved = (message?: string) => {
     permissionDialogOpen.value = false;

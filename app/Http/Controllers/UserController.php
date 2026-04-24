@@ -39,9 +39,19 @@ class UserController extends Controller
             $query->where('name', 'like', '%' . $request->input('name') . '%');
         }
 
+        // Date range filter for created_at
+        if ($request->filled('start_date') && $request->filled('end_date')) {
+            $query->whereBetween('created_at', [$request->input('start_date'), $request->input('end_date')]);
+        } elseif ($request->filled('start_date')) {
+            $query->whereDate('created_at', '>=', $request->input('start_date'));
+        } elseif ($request->filled('end_date')) {
+            $query->whereDate('created_at', '<=', $request->input('end_date'));
+        }
+
         return Inertia::render('Users/Index', [
             'users' => new UserCollection($query->paginate(10)),
             'roles' => Role::pluck('name')->toArray(),
+            'filters' => $request->only(['name', 'email', 'role', 'status', 'start_date', 'end_date']),
         ]);
     }
 

@@ -11,6 +11,7 @@ import type { ColumnDef } from '@tanstack/vue-table';
 import { ref, h, watch } from 'vue';
 import { toast } from 'vue-sonner';
 import DataTable from '@/components/DataTable.vue';
+import DeleteConfirmDialog from '@/components/DeleteConfirmDialog.vue';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -19,7 +20,6 @@ import {
     DialogTitle,
     DialogFooter,
 } from '@/components/ui/dialog';
-import DeleteConfirmDialog from '@/components/DeleteConfirmDialog.vue';
 import { destroy as destroyRole } from '@/routes/roles';
 import type { BreadcrumbItem } from '@/types';
 import RolesForm from './RolesForm.vue';
@@ -29,7 +29,8 @@ const roles = ref(
     (page.props as any).roles?.data ?? (page.props as any).roles ?? [],
 );
 const isLoading = ref(false);
-const search = ref('');
+const filters = (page.props as any).filters ?? {};
+const search = ref(filters.name ?? '');
 
 // Dialog state for create/edit role
 const roleDialogOpen = ref(false);
@@ -93,6 +94,20 @@ watch(
         roles.value = val?.data ?? val ?? [];
     },
 );
+
+let searchTimeout: ReturnType<typeof setTimeout>;
+watch(search, (val) => {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+        router.get(
+            '/roles',
+            {
+                name: val || undefined,
+            },
+            { preserveState: true, replace: true },
+        );
+    }, 300);
+});
 
 const openCreateRoleDialog = () => {
     roleDialogMode.value = 'create';

@@ -33,6 +33,15 @@ class TransactionRecordController extends Controller
             $query->where('category', $request->input('category'));
         }
 
+        // Date range filter for transaction date
+        if ($request->filled('start_date') && $request->filled('end_date')) {
+            $query->whereBetween('date', [$request->input('start_date'), $request->input('end_date')]);
+        } elseif ($request->filled('start_date')) {
+            $query->whereDate('date', '>=', $request->input('start_date'));
+        } elseif ($request->filled('end_date')) {
+            $query->whereDate('date', '<=', $request->input('end_date'));
+        }
+
         $query->orderBy('date', 'desc')->orderBy('id', 'desc');
 
         $transactions = $query->paginate(10)->through(function ($record) {
@@ -54,6 +63,7 @@ class TransactionRecordController extends Controller
             ->sort()
             ->values();
 
+        // Apply date filters to the provided filters list so the UI can preserve them
         return Inertia::render('TransactionRecords/Index', [
             'transactions' => $transactions,
             'categories' => $categories,
@@ -61,7 +71,7 @@ class TransactionRecordController extends Controller
                 'value' => $t->value,
                 'label' => $t->label(),
             ]),
-            'filters' => $request->only(['search', 'type', 'category']),
+            'filters' => $request->only(['search', 'type', 'category', 'start_date', 'end_date']),
         ]);
     }
 

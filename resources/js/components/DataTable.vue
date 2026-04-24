@@ -192,7 +192,7 @@ const canNextPage = computed(() => {
 <template>
     <div class="space-y-4">
         <!-- Search Bar -->
-        <div v-if="searchable" class="flex items-center">
+        <div v-if="searchable" class="flex items-center justify-between">
             <div class="relative w-full max-w-sm">
                 <Input
                     v-model="globalFilter"
@@ -204,6 +204,10 @@ const canNextPage = computed(() => {
                 >
                     <Search class="size-4 text-muted-foreground" />
                 </span>
+            </div>
+
+            <div class="ml-4 flex items-center space-x-2">
+                <slot name="search-extras" />
             </div>
         </div>
 

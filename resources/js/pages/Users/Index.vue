@@ -10,6 +10,7 @@ import type { ColumnDef } from '@tanstack/vue-table';
 import { ref, h, watch } from 'vue';
 import { toast } from 'vue-sonner';
 import DataTable from '@/components/DataTable.vue';
+import DeleteConfirmDialog from '@/components/DeleteConfirmDialog.vue';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -18,15 +19,18 @@ import {
     DialogTitle,
     DialogFooter,
 } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
 import type { BreadcrumbItem, User } from '@/types';
 import UserForm from './UserForm.vue';
-import DeleteConfirmDialog from '@/components/DeleteConfirmDialog.vue';
 
 const page = usePage();
 const users = ref<User[]>(
     (page.props as any).users?.data ?? (page.props as any).users ?? [],
 );
 const roles = ref<string[]>((page.props as any).roles ?? []);
+const filters = (page.props as any).filters ?? {};
+const startDate = ref<string | null>(filters.start_date ?? null);
+const endDate = ref<string | null>(filters.end_date ?? null);
 const isLoading = ref(false);
 const search = ref('');
 const selectedStatus = ref('all');
@@ -89,18 +93,22 @@ const columns: ColumnDef<User>[] = [
         accessorKey: 'status',
         header: 'Status',
         cell: ({ row }) => {
-            const status = row.getValue('status') as number;
+            const rawStatus = row.getValue('status');
+            const status = Number(rawStatus);
+
+            const isActive =
+                status === 1 || String(rawStatus).toLowerCase() === 'active';
 
             return h(
                 'div',
                 {
                     class: `px-2 py-1 rounded-full text-xs font-medium w-fit ${
-                        status === 1
+                        isActive
                             ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
                             : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
                     }`,
                 },
-                status === 1 ? 'Active' : 'Inactive',
+                isActive ? 'Active' : 'Inactive',
             );
         },
     },
@@ -188,7 +196,33 @@ const setStatusFilter = (status: string) => {
     selectedStatus.value = status;
     router.visit('/users', {
         method: 'get',
-        data: status !== 'all' ? { status } : {},
+        data:
+            status !== 'all'
+                ? {
+                      status,
+                      start_date: startDate.value,
+                      end_date: endDate.value,
+                  }
+                : { start_date: startDate.value, end_date: endDate.value },
+        preserveState: true,
+        replace: true,
+    });
+};
+
+const applyDateFilters = () => {
+    router.visit('/users', {
+        method: 'get',
+        data: {
+            name: search.value || undefined,
+            email: search.value || undefined,
+            role: undefined,
+            status:
+                selectedStatus.value === 'all'
+                    ? undefined
+                    : selectedStatus.value,
+            start_date: startDate.value || undefined,
+            end_date: endDate.value || undefined,
+        },
         preserveState: true,
         replace: true,
     });
@@ -288,7 +322,12 @@ const permanentDeleteUser = (id: number) => {
 watch(search, (val) => {
     router.visit('/users', {
         method: 'get',
-        data: { name: val, email: val },
+        data: {
+            name: val,
+            email: val,
+            start_date: startDate.value,
+            end_date: endDate.value,
+        },
         preserveState: true,
         replace: true,
     });
@@ -397,7 +436,26 @@ const handleTablePrevious = () => {
                 @page-change="(url) => handleTablePageChange(url)"
                 @next-page="() => handleTableNext()"
                 @previous-page="() => handleTablePrevious()"
-            />
+            >
+                <template #search-extras>
+                    <Input
+                        type="date"
+                        v-model="startDate"
+                        class="input input-sm"
+                    />
+                    <Input
+                        type="date"
+                        v-model="endDate"
+                        class="input input-sm"
+                    />
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        @click="applyDateFilters"
+                        >Apply</Button
+                    >
+                </template>
+            </DataTable>
         </div>
     </div>
 

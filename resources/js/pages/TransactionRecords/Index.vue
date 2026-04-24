@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/dialog';
 import type { BreadcrumbItem } from '@/types';
 import TransactionForm from './TransactionForm.vue';
+import Input from '@/components/ui/input/Input.vue';
 
 interface Transaction {
     id: number;
@@ -43,6 +44,8 @@ const filters = ref((page.props as any).filters ?? {});
 const isLoading = ref(false);
 const search = ref(filters.value.search ?? '');
 const selectedType = ref(filters.value.type ?? 'all');
+const startDate = ref<string | null>(filters.value.start_date ?? null);
+const endDate = ref<string | null>(filters.value.end_date ?? null);
 
 // Dialog state for create/edit
 const dialogOpen = ref(false);
@@ -190,6 +193,8 @@ const setTypeFilter = (type: string) => {
         {
             type: type === 'all' ? undefined : type,
             search: search.value || undefined,
+            start_date: startDate.value || undefined,
+            end_date: endDate.value || undefined,
         },
         { preserveState: true, replace: true },
     );
@@ -257,11 +262,26 @@ watch(search, (val) => {
                     selectedType.value === 'all'
                         ? undefined
                         : selectedType.value,
+                start_date: startDate.value || undefined,
+                end_date: endDate.value || undefined,
             },
             { preserveState: true, replace: true },
         );
     }, 300);
 });
+
+const applyDateFilters = () => {
+    router.get(
+        '/transaction-records',
+        {
+            search: search.value || undefined,
+            type: selectedType.value === 'all' ? undefined : selectedType.value,
+            start_date: startDate.value || undefined,
+            end_date: endDate.value || undefined,
+        },
+        { preserveState: true, replace: true },
+    );
+};
 
 // Pagination
 const handleTablePageChange = (url: string) => {
@@ -363,7 +383,26 @@ const handleTablePrevious = () => {
                 @page-change="(url) => handleTablePageChange(url)"
                 @next-page="() => handleTableNext()"
                 @previous-page="() => handleTablePrevious()"
-            />
+            >
+                <template #search-extras>
+                    <Input
+                        type="date"
+                        v-model="startDate"
+                        class="input input-sm"
+                    />
+                    <Input
+                        type="date"
+                        v-model="endDate"
+                        class="input input-sm"
+                    />
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        @click="applyDateFilters"
+                        >Apply</Button
+                    >
+                </template>
+            </DataTable>
         </div>
     </div>
 
