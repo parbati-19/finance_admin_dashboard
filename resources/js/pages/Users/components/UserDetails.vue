@@ -1,9 +1,9 @@
 <script setup lang="ts">
+import { defineProps } from 'vue';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import Textarea from '@/components/ui/textarea/index.vue';
-import { defineProps } from 'vue';
+import Textarea from '@/components/ui/textarea/Textarea.vue';
 
 const props = defineProps<{ form: any }>();
 </script>

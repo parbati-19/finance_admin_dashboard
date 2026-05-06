@@ -8,6 +8,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import Textarea from '@/components/ui/textarea/Textarea.vue';
 
 const props = defineProps<{
     form: any;
@@ -82,7 +83,7 @@ const { form, types } = props;
 
         <div>
             <Label for="txnNotes" class="mb-2 block">Notes</Label>
-            <textarea
+            <Textarea
                 id="txnNotes"
                 v-model="form.notes"
                 rows="3"
