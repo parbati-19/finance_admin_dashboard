@@ -13,7 +13,7 @@ const props = withDefaults(
         isCreate: false,
     },
 );
-const { form, isEdit, isCreate } = props;
+const { form } = props;
 </script>
 
 <template>

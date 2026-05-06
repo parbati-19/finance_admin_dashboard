@@ -81,7 +81,9 @@ const debouncedSync = (permissions: number[]) => {
 
 // 🔥 API sync
 const syncPermissions = (permissions: number[]) => {
-    if (!selectedRole.value || isSaving.value) return;
+    if (!selectedRole.value || isSaving.value) {
+return;
+}
 
     isSaving.value = true;
 
@@ -115,6 +117,7 @@ const syncPermissions = (permissions: number[]) => {
 const togglePermission = (permissionId: number, checked: boolean) => {
     if (!roleSelected.value) {
         highlightSelect.value = true;
+
         return;
     }
 
@@ -135,6 +138,7 @@ const togglePermission = (permissionId: number, checked: boolean) => {
 const toggleAll = (enable: boolean) => {
     if (!roleSelected.value) {
         highlightSelect.value = true;
+
         return;
     }
 

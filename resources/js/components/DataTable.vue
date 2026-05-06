@@ -178,6 +178,7 @@ const canPreviousPage = computed(() => {
     if (props.manualPagination) {
         return !!props.pagination?.prev_page_url;
     }
+
     return table.getCanPreviousPage();
 });
 
@@ -185,6 +186,7 @@ const canNextPage = computed(() => {
     if (props.manualPagination) {
         return !!props.pagination?.next_page_url;
     }
+
     return table.getCanNextPage();
 });
 </script>

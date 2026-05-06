@@ -335,7 +335,9 @@ watch(search, (val) => {
 
 // DataTable pagination handlers
 const handleTablePageChange = (url: string) => {
-    if (!url) return;
+    if (!url) {
+return;
+}
 
     router.visit(url, { preserveState: true, replace: true });
 };
@@ -343,13 +345,17 @@ const handleTablePageChange = (url: string) => {
 const handleTableNext = () => {
     const next = (page.props as any).users?.next_page_url;
 
-    if (next) router.visit(next, { preserveState: true, replace: true });
+    if (next) {
+router.visit(next, { preserveState: true, replace: true });
+}
 };
 
 const handleTablePrevious = () => {
     const prev = (page.props as any).users?.prev_page_url;
 
-    if (prev) router.visit(prev, { preserveState: true, replace: true });
+    if (prev) {
+router.visit(prev, { preserveState: true, replace: true });
+}
 };
 </script>
 

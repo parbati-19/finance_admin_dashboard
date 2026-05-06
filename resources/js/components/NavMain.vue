@@ -12,7 +12,6 @@ import {
     SidebarMenuSubButton,
     SidebarMenuSubItem,
 } from '@/components/ui/sidebar';
-import { useCurrentUrl } from '@/composables/useCurrentUrl';
 import type { MenuItem, NavItem, SharedData } from '@/types';
 defineProps<{
     items: MenuItem[];
@@ -21,11 +20,12 @@ defineProps<{
 const page = usePage<SharedData>();
 
 const isSubItemActive = (item: NavItem) => {
-    if (!item.items) return false;
+    if (!item.items) {
+return false;
+}
+
     return item.items.some((subItem) => subItem.href === page.url);
 };
-
-const { isCurrentUrl } = useCurrentUrl();
 </script>
 
 <template>

@@ -22,7 +22,6 @@ import {
 import { destroy as destroyPermission } from '@/routes/permissions';
 import type { BreadcrumbItem } from '@/types';
 import PermissionForm from './PermissionForm.vue';
-import { Input } from '@/components/ui/input';
 
 const page = usePage();
 const permissions = ref(

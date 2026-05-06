@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, router, useForm } from '@inertiajs/vue3';
+import { Head, useForm } from '@inertiajs/vue3';
 import { toast } from 'vue-sonner';
 import { Button } from '@/components/ui/button';
 import PermissionFormFields from './PermissionFormFields.vue';

@@ -18,9 +18,9 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
+import Input from '@/components/ui/input/Input.vue';
 import type { BreadcrumbItem } from '@/types';
 import TransactionForm from './TransactionForm.vue';
-import Input from '@/components/ui/input/Input.vue';
 
 interface Transaction {
     id: number;
@@ -239,7 +239,7 @@ const handleDeleteConfirm = async () => {
     );
 };
 
-const handleSaved = (message?: string) => {
+const handleSaved = () => {
     dialogOpen.value = false;
     router.reload();
 };

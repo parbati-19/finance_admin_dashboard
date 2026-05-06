@@ -3,9 +3,10 @@ import { defineProps } from 'vue';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import Textarea from '@/components/ui/textarea/Textarea.vue';
+import { Textarea } from '@/components/ui/textarea';
 
 const props = defineProps<{ form: any }>();
+const form = props.form;
 </script>
 
 <template>
@@ -21,7 +22,7 @@ const props = defineProps<{ form: any }>();
             </div>
             <div class="sm:col-span-8 xl:col-span-6 2xl:col-span-4">
                 <div>
-                    <Select v-model="props.form.user_type">
+                    <Select v-model="form.user_type">
                         <SelectTrigger class="w-full">
                             <SelectValue placeholder="Select type" />
                         </SelectTrigger>
@@ -31,7 +32,7 @@ const props = defineProps<{ form: any }>();
                         </SelectContent>
                     </Select>
                 </div>
-                <div v-if="props.form.errors?.user_type" class="mt-2 text-sm text-red-600 dark:text-red-400">{{ props.form.errors.user_type }}</div>
+                <div v-if="form.errors?.user_type" class="mt-2 text-sm text-red-600 dark:text-red-400">{{ props.form.errors.user_type }}</div>
             </div>
         </div>
 
@@ -40,8 +41,8 @@ const props = defineProps<{ form: any }>();
                 <Label for="company_name" class="mb-3">Company Name</Label>
             </div>
             <div class="sm:col-span-8 xl:col-span-6 2xl:col-span-4">
-                <Input id="company_name" v-model="props.form.company_name" />
-                <div v-if="props.form.errors?.company_name" class="mt-2 text-sm text-red-600 dark:text-red-400">
+                <Input id="company_name" v-model="form.company_name" />
+                <div v-if="form.errors?.company_name" class="mt-2 text-sm text-red-600 dark:text-red-400">
                     {{ props.form.errors.company_name }}
                 </div>
             </div>
@@ -52,8 +53,8 @@ const props = defineProps<{ form: any }>();
                 <Label for="company_pan">Company PAN</Label>
             </div>
             <div class="sm:col-span-8 xl:col-span-6 2xl:col-span-4">
-                <Input id="company_pan" v-model="props.form.company_pan" />
-                <div v-if="props.form.errors?.company_pan" class="mt-2 text-sm text-red-600 dark:text-red-400">
+                <Input id="company_pan" v-model="form.company_pan" />
+                <div v-if="form.errors?.company_pan" class="mt-2 text-sm text-red-600 dark:text-red-400">
                     {{ props.form.errors.company_pan }}
                 </div>
             </div>
@@ -64,8 +65,8 @@ const props = defineProps<{ form: any }>();
                 <Label for="contact_person">Contact Person</Label>
             </div>
             <div class="sm:col-span-8 xl:col-span-6 2xl:col-span-4">
-                <Input id="contact_person" v-model="props.form.contact_person" />
-                <div v-if="props.form.errors?.contact_person" class="mt-2 text-sm text-red-600 dark:text-red-400">
+                <Input id="contact_person" v-model="form.contact_person" />
+                <div v-if="form.errors?.contact_person" class="mt-2 text-sm text-red-600 dark:text-red-400">
                     {{ props.form.errors.contact_person }}
                 </div>
             </div>
@@ -76,8 +77,8 @@ const props = defineProps<{ form: any }>();
                 <Label for="company_address">Company Address</Label>
             </div>
             <div class="sm:col-span-8 xl:col-span-6 2xl:col-span-4">
-                <Textarea id="company_address" v-model="props.form.company_address" rows="3" />
-                <div v-if="props.form.errors?.company_address" class="mt-2 text-sm text-red-600 dark:text-red-400">
+                <Textarea id="company_address" v-model="form.company_address" rows="3" />
+                <div v-if="form.errors?.company_address" class="mt-2 text-sm text-red-600 dark:text-red-400">
                     {{ props.form.errors.company_address }}
                 </div>
             </div>
@@ -90,14 +91,14 @@ const props = defineProps<{ form: any }>();
             <div class="sm:col-span-8 xl:col-span-6 2xl:col-span-4">
                 <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div>
-                        <Input v-model="props.form.company_phone" placeholder="Company phone" />
-                        <div v-if="props.form.errors?.company_phone" class="mt-2 text-sm text-red-600 dark:text-red-400">
+                        <Input v-model="form.company_phone" placeholder="Company phone" />
+                        <div v-if="form.errors?.company_phone" class="mt-2 text-sm text-red-600 dark:text-red-400">
                             {{ props.form.errors.company_phone }}
                         </div>
                     </div>
                     <div>
-                        <Input v-model="props.form.personal_phone" placeholder="Personal phone" />
-                        <div v-if="props.form.errors?.personal_phone" class="mt-2 text-sm text-red-600 dark:text-red-400">
+                        <Input v-model="form.personal_phone" placeholder="Personal phone" />
+                        <div v-if="form.errors?.personal_phone" class="mt-2 text-sm text-red-600 dark:text-red-400">
                             {{ props.form.errors.personal_phone }}
                         </div>
                     </div>
@@ -110,8 +111,8 @@ const props = defineProps<{ form: any }>();
                 <Label for="company_email">Company Email</Label>
             </div>
             <div class="sm:col-span-8 xl:col-span-6 2xl:col-span-4">
-                <Input id="company_email" v-model="props.form.company_email" type="email" />
-                <div v-if="props.form.errors?.company_email" class="mt-2 text-sm text-red-600 dark:text-red-400">
+                <Input id="company_email" v-model="form.company_email" type="email" />
+                <div v-if="form.errors?.company_email" class="mt-2 text-sm text-red-600 dark:text-red-400">
                     {{ props.form.errors.company_email }}
                 </div>
             </div>
@@ -121,10 +122,10 @@ const props = defineProps<{ form: any }>();
             <div class="sm:col-span-4 xl:col-span-3 2xl:col-span-2"></div>
             <div class="sm:col-span-8 xl:col-span-6 2xl:col-span-4">
                 <div class="flex items-center gap-2">
-                    <input id="isVerified" type="checkbox" v-model="props.form.is_verified" class="h-4 w-4" />
+                    <input id="isVerified" type="checkbox" v-model="form.is_verified" class="h-4 w-4" />
                     <Label for="isVerified" class="mb-0">Verified</Label>
                 </div>
-                <div v-if="props.form.errors?.is_verified" class="mt-2 text-sm text-red-600 dark:text-red-400">
+                <div v-if="form.errors?.is_verified" class="mt-2 text-sm text-red-600 dark:text-red-400">
                     {{ props.form.errors.is_verified }}
                 </div>
             </div>
