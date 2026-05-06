@@ -8,7 +8,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import Textarea from '@/components/ui/textarea/Textarea.vue';
+import { Textarea } from '@/components/ui/textarea';
 
 const props = defineProps<{
     form: any;
@@ -89,7 +89,7 @@ const { form, types } = props;
                 rows="3"
                 class="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                 placeholder="Optional notes..."
-            />
+            ></Textarea>
             <p v-if="form.errors?.notes" class="mt-1 text-xs text-destructive">
                 {{ form.errors.notes }}
             </p>
